@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 书架管理 - 极简架构
  */
 import { getDatabase } from './database';
@@ -22,14 +22,14 @@ export interface BookArrayPatch { add?: string[]; remove?: string[]; set?: strin
 export interface BookBulkPatch { tags?: BookArrayPatch; groups?: BookArrayPatch; status?: BookStatus; rating?: number; progress?: number }
 
 // ===== 常量 =====
-export const SORTS = [['time','最近阅读'],['added','最近添加'],['progress','阅读进度'],['rating','评分'],['readTime','阅读时长'],['name','书名'],['author','作者'],['update','最近更新']] as const;
-export const STATUS_OPTIONS = [['unread','未读'],['reading','在读'],['finished','读完']] as const;
-export const STATUS_MAP: Record<BookStatus,string> = {unread:'未读',reading:'在读',finished:'读完'};
-export const RATING_OPTIONS = [[0,'☆☆☆☆☆ 全部'],[5,'★★★★★ 仅5星'],[4,'★★★★☆ 4星及以上'],[3,'★★★☆☆ 3星及以上']] as const;
+export const SORTS = [['time','최근 읽음'],['added','최근 추가'],['progress','독서 진도'],['rating','평점'],['readTime','독서 시간'],['name','제목'],['author','저자'],['update','최근 업데이트']] as const;
+export const STATUS_OPTIONS = [['unread','읽지 않음'],['reading','읽는 중'],['finished','완독']] as const;
+export const STATUS_MAP: Record<BookStatus,string> = {unread:'읽지 않음',reading:'읽는 중',finished:'완독'};
+export const RATING_OPTIONS = [[0,'☆☆☆☆☆ 전체'],[5,'★★★★★ 5점만'],[4,'★★★★☆ 4점 이상'],[3,'★★★☆☆ 3점 이상']] as const;
 export const FORMAT_OPTIONS: BookFormat[] = ['epub','pdf','mobi','azw3','txt'];
-export const VIEW_MODES = [{ value: 'grid', label: '网格' }, { value: 'list', label: '列表' }, { value: 'compact', label: '紧凑' }] as const;
+export const VIEW_MODES = [{ value: 'grid', label: '그리드' }, { value: 'list', label: '목록' }, { value: 'compact', label: '간소화' }] as const;
 export const VIEW_MODE_ICONS: Record<BookshelfViewMode, string> = { grid: '#lucide-panels-top-left', list: '#lucide-list-restart', compact: '#lucide-book-text' };
-export const MODAL_TITLES: Record<Exclude<BookshelfModalMode, null>, string> = { detail: '书籍详情', edit: '编辑书籍', manage: '添加内容', organize: '整理书架' };
+export const MODAL_TITLES: Record<Exclude<BookshelfModalMode, null>, string> = { detail: '도서 상세', edit: '도서 편집', manage: '도서 추가', organize: '서재 정리' };
 export const STAR_OPTIONS = [1, 2, 3, 4, 5] as const;
 export const STATUS_SELECT_OPTIONS = STATUS_OPTIONS.map(([value, label]) => ({ value, label }));
 export const FORMAT_SELECT_OPTIONS = FORMAT_OPTIONS.map(value => ({ value, label: value.toUpperCase() }));
@@ -48,25 +48,25 @@ export const getNextViewMode = (mode: BookshelfViewMode): BookshelfViewMode => {
   return values[(values.indexOf(mode) + 1) % values.length];
 };
 export const buildFilterSections = (stats: { byStatus: Record<BookStatus, number>; byFormat: Record<string, number> }, allTags: Array<{ tag: string; count: number }>): BookshelfSection[] => [
-  { key: 'status', label: '状态', options: STATUS_OPTIONS.map(([value, label]) => ({ value, label, count: stats.byStatus[value] })) },
-  { key: 'rating', label: '评分', options: RATING_OPTIONS.map(([value, label]) => ({ value, label, count: 0 })) },
-  { key: 'format', label: '格式', options: FORMAT_OPTIONS.map(value => ({ value, label: value.toUpperCase(), count: stats.byFormat[value] })) },
-  { key: 'tags', label: '标签', options: allTags.slice(0, 20).map(({ tag, count }) => ({ value: tag, label: tag, count })) },
+  { key: 'status', label: '상태', options: STATUS_OPTIONS.map(([value, label]) => ({ value, label, count: stats.byStatus[value] })) },
+  { key: 'rating', label: '평점', options: RATING_OPTIONS.map(([value, label]) => ({ value, label, count: 0 })) },
+  { key: 'format', label: '형식', options: FORMAT_OPTIONS.map(value => ({ value, label: value.toUpperCase(), count: stats.byFormat[value] })) },
+  { key: 'tags', label: '태그', options: allTags.slice(0, 20).map(({ tag, count }) => ({ value: tag, label: tag, count })) },
 ];
-export const buildEditFields = () => [{ key: 'title', label: '书名', type: 'text', placeholder: '书名' }, { key: 'author', label: '作者', type: 'text', placeholder: '作者' }, { key: 'cover', label: '封面', type: 'text', placeholder: '封面图片 URL' }, { key: 'rating', label: '评分', type: 'select', options: [{ value: 0, label: '无评分' }, ...STAR_OPTIONS.map(value => ({ value, label: `${'★'.repeat(value)} ${value}星` }))] }, { key: 'status', label: '状态', type: 'select', options: STATUS_SELECT_OPTIONS }, { key: 'tags', label: '标签', type: 'tags', placeholder: '用逗号分隔' }, { key: 'groups', label: '分组', type: 'groups' }, { key: 'bind', label: '绑定文档', type: 'bind' }];
+export const buildEditFields = () => [{ key: "title", label: "제목", type: "text", placeholder: "도서 제목" }, { key: "author", label: "저자", type: "text", placeholder: "저자" }, { key: "cover", label: "표지", type: "text", placeholder: "표지 이미지 URL" }, { key: "rating", label: "평점", type: "select", options: [{ value: 0, label: "평점 없음" }, ...STAR_OPTIONS.map(value => ({ value, label: `${`★`.repeat(value)} ${value}점` }))] }, { key: "status", label: "상태", type: "select", options: STATUS_SELECT_OPTIONS }, { key: "tags", label: "태그", type: "tags", placeholder: "쉼표로 구분" }, { key: "groups", label: "그룹", type: "groups" }, { key: "bind", label: "문서 연결", type: "bind" }];
 export const buildGroupFields = (group: GroupConfig | null, allTags: Array<{ tag: string; count: number }>) => !group ? [] : [
-  { key: 'name', label: '名称', type: 'text', placeholder: '分组名称' },
+  { key: 'name', label: '이름', type: 'text', placeholder: '그룹 이름' },
   ...(group.type === 'smart' ? [
-    { key: 'tags', label: '标签', type: 'chips', options: allTags.slice(0, 10).map(({ tag }) => ({ value: tag, label: tag })) },
-    { key: 'format', label: '格式', type: 'chips', options: FORMAT_SELECT_OPTIONS },
-    { key: 'status', label: '状态', type: 'chips', options: STATUS_SELECT_OPTIONS },
-    { key: 'rating', label: '评分', type: 'chips', options: [{ value: 0, label: '全部' }, ...STAR_OPTIONS.map(value => ({ value, label: `≥${value}星` }))], single: true },
+    { key: 'tags', label: '태그', type: 'chips', options: allTags.slice(0, 10).map(({ tag }) => ({ value: tag, label: tag })) },
+    { key: 'format', label: '형식', type: 'chips', options: FORMAT_SELECT_OPTIONS },
+    { key: 'status', label: '상태', type: 'chips', options: STATUS_SELECT_OPTIONS },
+    { key: 'rating', label: '평점', type: 'chips', options: [{ value: 0, label: '전체' }, ...STAR_OPTIONS.map(value => ({ value, label: `≥${value}점` }))], single: true },
   ] : []),
 ];
 const fmt = {
   bytes: (n: number) => { const k = 1024, i = n < k ? 0 : Math.floor(Math.log(n) / Math.log(k)); return `${(n / Math.pow(k, i)).toFixed(1)} ${['B', 'KB', 'MB', 'GB'][i]}`; },
   date: (ts: number) => ts ? new Date(ts).toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '-',
-  time: (s: number) => { const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60); return h ? `${h}小时${m}分钟` : `${m}分钟`; },
+  time: (s: number) => { const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60); return h ? `${h}시간 ${m}분` : `${m}분`; },
 };
 export const buildBookMetadata = (meta: any = {}) => ({ publisher: meta.publisher, publishDate: meta.published || meta.publishDate, language: meta.language, isbn: meta.identifier || meta.isbn, description: meta.intro || meta.description, series: meta.series, sourceName: meta.sourceName, fileSize: meta.fileSize })
 export interface SiyuanCloudNode { name: string; path: string; parent: string; is_dir: boolean; size?: number }
@@ -124,7 +124,8 @@ export const applyBookArrayPatch = (current: string[] = [], patch?: BookArrayPat
 export const hasBookBulkPatch = (patch?: BookBulkPatch) => !!patch && !!(patch.tags || patch.groups || patch.status || patch.rating !== undefined || patch.progress !== undefined)
 export const buildDetailFields = (book: any, groups: GroupConfig[]): BookshelfDetailField[] => {
   const m = book?.meta || {};
-  return !book ? [] : [['书名', book.title], ['作者', book.author], ['格式', book.format.toUpperCase()], ['进度', `${book.progress || 0}%`], ['状态', STATUS_MAP[book.status]], ['评分', book.rating ? '★'.repeat(book.rating) : '未评分'], ['章节', `${book.chapter || 0}/${book.total || '-'}`], ['时长', fmt.time(book.time || 0)], ['大小', fmt.bytes(book.size || 0)], ['添加', fmt.date(book.added)], ['最后阅读', fmt.date(book.read)], book.finished && ['完成', fmt.date(book.finished)], book.tags.length && ['标签', book.tags.join(', ')], book.groups.length && ['分组', groups.filter(g => book.groups.includes(g.id)).map(g => g.name).join(', ')], book.bindDocName && ['绑定文档', book.bindDocName], m.publisher && ['出版社', m.publisher], m.publishDate && ['出版日期', m.publishDate], m.isbn && ['ISBN', m.isbn], m.series && ['系列', m.series], m.description && ['简介', m.description], book.path && ['路径', book.path, true]].filter(Boolean).map(([label, value, mono]) => ({ label, value, mono })) as BookshelfDetailField[];
+  const bookAuthor = (!book.author || book.author === '未知作者' || book.author === 'Unknown' || book.author === '作/译者未知') ? '작자 미상' : book.author;
+  return !book ? [] : [['제목', book.title], ['저자', bookAuthor], ['형식', book.format.toUpperCase()], ['진도', `${book.progress || 0}%`], ['상태', STATUS_MAP[book.status]], ['평점', book.rating ? '★'.repeat(book.rating) : '평점 없음'], ['챕터', `${book.chapter || 0}/${book.total || '-'}`], ['독서 시간', fmt.time(book.time || 0)], ['크기', fmt.bytes(book.size || 0)], ['추가일', fmt.date(book.added)], ['최근 읽음', fmt.date(book.read)], book.finished && ['완독일', fmt.date(book.finished)], book.tags.length && ['태그', book.tags.join(', ')], book.groups.length && ['그룹', groups.filter(g => book.groups.includes(g.id)).map(g => g.name).join(', ')], book.bindDocName && ['연결된 문서', book.bindDocName], m.publisher && ['출판사', m.publisher], m.publishDate && ['출판일', m.publishDate], m.isbn && ['ISBN', m.isbn], m.series && ['시리즈', m.series], m.description && ['소개', m.description], book.path && ['경로', book.path, true]].filter(Boolean).map(([label, value, mono]) => ({ label, value, mono })) as BookshelfDetailField[];
 };
 
 export class BookshelfManager {
@@ -158,8 +159,8 @@ export class BookshelfManager {
   };
   private buildBookPayload = (info: any) => ({
     url: info.url,
-    title: normalizeBookTitle(info.title || '未知') || '未知',
-    author: info.author || '未知',
+    title: normalizeBookTitle(info.title || '알 수 없음') || '알 수 없음',
+    author: info.author || '작자 미상',
     cover: info.cover || '',
     format: info.format || 'epub',
     path: info.path || '',
@@ -183,14 +184,14 @@ export class BookshelfManager {
     fingerprint: info.fingerprint || '',
   });
   private cleanPath = (path = '') => path.split(/[?#]/)[0]
-  private fileBaseName = (path: string, fallback = '未知书籍') => {
+  private fileBaseName = (path: string, fallback = '제목 없는 도서') => {
     const name = this.cleanPath(path).split(/[/\\]/).pop() || fallback
     try { path = decodeURIComponent(name) } catch { path = name }
     return path.replace(/\.[^.]+$/, '') || fallback
   }
   private resolvedTitle = (meta: any, name: string) => normalizeBookTitle(meta.title || name) || name
   private savePreparedBook = async ({ url, path, format, size, meta, name, cover = '', dataId = '', fingerprint = '' }: { url: string; path: string; format: BookFormat; size?: number; meta: any; name: string; cover?: string; dataId?: string; fingerprint?: string }) => {
-    await this.addBook({ url, title: this.resolvedTitle(meta, name), author: meta.author || '未知作者', cover, format, path, size: size || 0, metadata: this.buildMetadata(meta), dataId, fingerprint })
+    await this.addBook({ url, title: this.resolvedTitle(meta, name), author: meta.author || '작자 미상', cover, format, path, size: size || 0, metadata: this.buildMetadata(meta), dataId, fingerprint })
     return url
   }
   private saveCover = (blob: Blob | undefined, url: string) => blob ? Promise.race([saveOptionalCover(blob, url), new Promise<undefined>(resolve => setTimeout(resolve, 8000))]).catch(() => undefined) : undefined
@@ -211,7 +212,7 @@ export class BookshelfManager {
   
   async addBook(info: any) {
     if (!info.url) throw new Error('URL required');
-    if (await this.useDb(db => db.getBook(info.url))) throw new Error('已存在');
+    if (await this.useDb(db => db.getBook(info.url))) throw new Error('이미 존재합니다');
     const now = Date.now();
     await this.saveBookData(this.buildBookPayload({ ...info, added: now, read: now, finished: 0 }));
   }
@@ -402,7 +403,7 @@ export class BookshelfManager {
   
   async updateBookInfo(url: string, formData: { title: string; author: string; tags: string; rating: number; status: BookStatus; cover: string; groups: string[]; bindDocId?: string; bindDocName?: string }) {
     const book = await this.getBook(url)
-    if (!book || !formData.title.trim()) return { success: false, error: '书名不能为空' }
+    if (!book || !formData.title.trim()) return { success: false, error: '도서 제목은 비워둘 수 없습니다' }
     const tags = formData.tags.split(/[,，]/).map(t => t.trim()).filter(t => t)
     await this.updateBook(url, { title: formData.title.trim(), author: formData.author.trim(), tags, rating: formData.rating || undefined, status: formData.status, cover: formData.cover.trim() || '', groups: formData.groups, bindDocId: formData.bindDocId || '', bindDocName: formData.bindDocName || '' })
     return { success: true }
@@ -427,7 +428,7 @@ export class BookshelfManager {
   async addLocalLinkBook(file: File, parsedMeta?: any) {
     await this.init()
     const localPath = (file as any)?.path || (file as any)?._path || ''
-    if (!localPath) throw new Error('本地文件链接不可用')
+    if (!localPath) throw new Error('로컬 파일 링크를 사용할 수 없습니다')
     const { file: source, format, meta, title } = await this.prepareLocalBook(file, parsedMeta)
     const fingerprint = await fileFingerprint(source), dataId = await dataIdFromFingerprint(fingerprint)
     const url=toFileUrl(localPath)
@@ -444,7 +445,7 @@ export class BookshelfManager {
       const fingerprint = urlFingerprint(bookUrl), dataId = await dataIdFromFingerprint(fingerprint)
       const format = this.getFormat(bookUrl)
       const cover = await this.downloadCover(coverUrl, bookUrl)
-      await this.addBook({ url: bookUrl, title: normalizeBookTitle(bookInfo.title) || bookInfo.title, author: bookInfo.author || '未知作者', cover, format, path: bookUrl, size: 0, metadata: {}, dataId, fingerprint })
+      await this.addBook({ url: bookUrl, title: normalizeBookTitle(bookInfo.title) || bookInfo.title, author: bookInfo.author || '작자 미상', cover, format, path: bookUrl, size: 0, metadata: {}, dataId, fingerprint })
       return bookUrl
     }
     
@@ -473,7 +474,7 @@ export class BookshelfManager {
   
   private async parseUrlBook(url: string) {
     const isHttp = /^https?:\/\//.test(url), isAbsolute = /^[a-zA-Z]:[\\\/]/.test(url) || url.startsWith('/')
-    if (!isHttp && !isAbsolute && !url.includes('/') && !url.includes('\\')) throw new Error('请输入有效的链接或文件路径')
+    if (!isHttp && !isAbsolute && !url.includes('/') && !url.includes('\\')) throw new Error('유효한 링크 또는 파일 경로를 입력하세요')
     
     url = normalizeSiyuanCloudUrl(url)
     const filePath = url.startsWith(SIYUAN_CLOUD_BASE) ? url : isAbsolute && !url.startsWith('file://') ? toFileUrl(url) : url
@@ -496,13 +497,13 @@ export class BookshelfManager {
   
   private buildMetadata = buildBookMetadata
   private getFormat = (path: string): BookFormat => { const ext = this.cleanPath(path).split('.').pop()?.toLowerCase() || ''; return ({ epub: 'epub', pdf: 'pdf', mobi: 'mobi', azw3: 'azw3', azw: 'azw3', txt: 'txt' } as Record<string, BookFormat>)[ext] || 'epub' }
-  private metaDef = (defaultName: string) => ({ title: defaultName, author: '未知作者', publisher: undefined, published: undefined, language: undefined, identifier: undefined, intro: undefined, subjects: [], series: undefined, coverBlob: undefined, subtitle: undefined })
+  private metaDef = (defaultName: string) => ({ title: defaultName, author: '작자 미상', publisher: undefined, published: undefined, language: undefined, identifier: undefined, intro: undefined, subjects: [], series: undefined, coverBlob: undefined, subtitle: undefined })
   private normMeta = (metadata: any, defaultName: string, coverBlob?: Blob | null) => {
     const norm = (v: any): string => typeof v === 'string' ? v : (v?.['zh-CN'] || v?.['zh'] || v?.['en'] || Object.values(v || {})[0] || '') as string
     const arr = (v: any) => v ? (Array.isArray(v) ? v : [v]) : []
     const contrib = (v: any) => arr(v).map((c: any) => typeof c === 'string' ? c : norm(c?.name)).filter(Boolean).join(', ') || undefined
     return {
-      title: normalizeBookTitle(norm(metadata.title) || defaultName) || defaultName, subtitle: norm(metadata.subtitle), author: contrib(metadata.author) || '未知作者',
+      title: normalizeBookTitle(norm(metadata.title) || defaultName) || defaultName, subtitle: norm(metadata.subtitle), author: contrib(metadata.author) || '작자 미상',
       publisher: contrib(metadata.publisher), published: metadata.published instanceof Date ? metadata.published.toISOString().split('T')[0] : metadata.published ? String(metadata.published) : undefined,
       language: arr(metadata.language)[0], identifier: arr(metadata.identifier)[0], intro: metadata.description,
       subjects: arr(metadata.subject).map((s: any) => typeof s === 'string' ? s : norm(s?.name)).filter(Boolean),

@@ -15,41 +15,41 @@ type MarkNoteFilter = 'all' | 'with-note'
 type FilterState = { types: MarkType[]; colors: string[]; textStyles: string[]; tags: string[]; note: MarkNoteFilter; sort: MarkSort }
 
 export const MARK_SORT_OPTIONS = [
-  { value: 'time', label: '时间' },
-  { value: 'date', label: '日期' },
-  { value: 'chapter', label: '章节' },
-  { value: 'page', label: '页码' },
-  { value: 'name', label: '名称' },
-  { value: 'custom', label: '自定义' },
+  { value: 'time', label: '시간' },
+  { value: 'date', label: '날짜' },
+  { value: 'chapter', label: '챕터' },
+  { value: 'page', label: '페이지' },
+  { value: 'name', label: '이름' },
+  { value: 'custom', label: '사용자 지정' },
 ] as const
 
 const TYPE_OPTIONS = [
-  { value: 'highlight', label: '文本标注' },
-  { value: 'note', label: '笔记' },
-  { value: 'bookmark', label: '书签' },
+  { value: 'highlight', label: '텍스트 주석' },
+  { value: 'note', label: '메모' },
+  { value: 'bookmark', label: '북마크' },
 ] as const
 
 const NOTE_OPTIONS = [
-  { value: 'all', label: '全部' },
-  { value: 'with-note', label: '仅带笔记' },
+  { value: 'all', label: '전체' },
+  { value: 'with-note', label: '메모 포함만' },
 ] as const
 
 const TEXT_STYLE_OPTIONS = STYLES.map(item => ({ value: item.type, label: item.name }))
 const TYPE_CYCLE: Array<{ value: MarkType | null; label: string; icon: string }> = [
-  { value: null, label: '全部标注', icon: '#lucide-square-pen' },
+  { value: null, label: '전체 주석', icon: '#lucide-square-pen' },
   { value: 'highlight', label: '文本标注', icon: '#lucide-map-pin-check' },
   { value: 'note', label: '笔记', icon: '#lucide-map-pin-pen' },
   { value: 'bookmark', label: '书签', icon: '#lucide-bookmark-check' },
 ]
 
 const COLOR_BUCKETS = [
-  { value: 'yellow', label: '黄色', aliases: ['yellow', '#ffeb3b', '#ffcd45'] },
-  { value: 'red', label: '红色', aliases: ['red', '#ff0000'] },
-  { value: 'green', label: '绿色', aliases: ['green', '#00aa00'] },
-  { value: 'blue', label: '蓝色', aliases: ['blue', '#0066ff', '#00bcd4'] },
-  { value: 'purple', label: '紫色', aliases: ['purple'] },
-  { value: 'orange', label: '橙色', aliases: ['orange', '#ffb000'] },
-  { value: 'pink', label: '粉色', aliases: ['pink', '#ff00ff'] },
+  { value: 'yellow', label: '노란색', aliases: ['yellow', '#ffeb3b', '#ffcd45'] },
+  { value: 'red', label: '빨간색', aliases: ['red', '#ff0000'] },
+  { value: 'green', label: '초록색', aliases: ['green', '#00aa00'] },
+  { value: 'blue', label: '파란색', aliases: ['blue', '#0066ff', '#00bcd4'] },
+  { value: 'purple', label: '보라색', aliases: ['purple'] },
+  { value: 'orange', label: '주황색', aliases: ['orange', '#ffb000'] },
+  { value: 'pink', label: '분홍색', aliases: ['pink', '#ff00ff'] },
 ] as const
 const PDF_COLORS = ['#ef4444', '#ff8a00', '#ffcd45', '#63c96b', '#35c4c6', '#5b7cdb', '#c23cc9', '#8b2c24', '#000000', '#ffffff', 'transparent']
 const PDF_STYLES = ['highlight', 'strikeout', 'underline', 'squiggly'] as const
@@ -92,7 +92,7 @@ export const useReaderMarks = (i18n?: any, context?: any) => {
   const isPdfMode = computed(() => !!(activeView.value as any)?.isPdf)
   const readOnly = computed(() => !!getContext()?.readOnlyMarks || isLibraryMode.value)
   const markSort = computed(() => markFilter.value.sort)
-  const searchPlaceholder = '搜索标注、笔记、书签、墨迹、形状'
+  const searchPlaceholder = '주석, 메모, 북마크, 잉크, 도형 검색'
   const getEditColorOptions = () => isPdfMode.value && marks.value?.updateMark
     ? PDF_COLORS.map(color => ({ key: color, value: color, bg: color === 'transparent' ? 'linear-gradient(45deg,transparent 45%,#e44234 46%,#e44234 54%,transparent 55%)' : color }))
     : COLORS.map(color => ({ key: color.color, value: color.color, bg: color.bg }))
@@ -143,18 +143,18 @@ export const useReaderMarks = (i18n?: any, context?: any) => {
   const hasActiveFilters = computed(() => !!(markFilter.value.types.length || markFilter.value.colors.length || markFilter.value.textStyles.length || markFilter.value.tags.length || markFilter.value.note !== 'all' || markFilter.value.sort !== 'time' || markReverse.value))
   const hasLibraryContentFilter = computed(() => !!(keyword.value.trim() || markFilter.value.types.length || markFilter.value.colors.length || markFilter.value.textStyles.length || markFilter.value.tags.length || markFilter.value.note !== 'all'))
   const hasLibraryScan = computed(() => hasLibraryContentFilter.value || hasActiveFilters.value)
-  const filterLabel = computed(() => hasActiveFilters.value ? '筛选中' : '筛选')
+  const filterLabel = computed(() => hasActiveFilters.value ? '필터 적용 중' : '필터')
   const typeMode = computed(() => TYPE_CYCLE.find(item => item.value === (markFilter.value.types.length === 1 ? markFilter.value.types[0] : null)) || TYPE_CYCLE[0])
   const toolbarMenuAction = computed(() => ({ id: 'type', icon: typeMode.value.icon, label: typeMode.value.label, tooltipDir: 'sw', active: !!typeMode.value.value }))
   const markGroupKeys = computed(() => Array.isArray(list.value) ? list.value.filter((item: any) => item?.isGroup).map((item: any) => item.key) : [])
   const markAllExpanded = computed(() => !!markGroupKeys.value.length && !markGroupKeys.value.some(key => !!collapsed.value[key]))
   const pdfAnnotationsHidden = computed(() => !!(activeView.value as any)?.annotationsHidden)
   const toolbarActions = computed(() => [
-    { id: 'togglePdfAnnotations', icon: pdfAnnotationsHidden.value ? '#lucide-eye-off' : '#lucide-eye', label: pdfAnnotationsHidden.value ? '显示 PDF 标注' : '隐藏 PDF 标注', active: pdfAnnotationsHidden.value, show: isPdfMode.value },
-    { id: 'syncAll', icon: '#iconDownload', label: i18n?.syncAll || '同步全部', active: syncingAll.value, show: !readOnly.value && pendingImportCount.value > 0 },
+    { id: 'togglePdfAnnotations', icon: pdfAnnotationsHidden.value ? '#lucide-eye-off' : '#lucide-eye', label: pdfAnnotationsHidden.value ? 'PDF 주석 표시' : 'PDF 주석 숨기기', active: pdfAnnotationsHidden.value, show: isPdfMode.value },
+    { id: 'syncAll', icon: '#iconDownload', label: i18n?.syncAll || '모두 동기화', active: syncingAll.value, show: !readOnly.value && pendingImportCount.value > 0 },
     { id: 'organize', icon: '#lucide-sliders-horizontal', label: filterLabel.value, active: showOrganize.value || hasActiveFilters.value },
-    { id: 'expand', icon: markAllExpanded.value ? '#lucide-panel-top-close' : '#lucide-panel-top-open', label: markAllExpanded.value ? '折叠分组' : '展开分组', show: isGroupedMode.value },
-    { id: 'reverse', icon: markReverse.value ? '#lucide-arrow-up-1-0' : '#lucide-arrow-down-0-1', label: markReverse.value ? '倒序' : '正序', active: markReverse.value },
+    { id: 'expand', icon: markAllExpanded.value ? '#lucide-panel-top-close' : '#lucide-panel-top-open', label: markAllExpanded.value ? '그룹 접기' : '그룹 펼치기', show: isGroupedMode.value },
+    { id: 'reverse', icon: markReverse.value ? '#lucide-arrow-up-1-0' : '#lucide-arrow-down-0-1', label: markReverse.value ? '역순' : '정순', active: markReverse.value },
   ])
 
   const matchFilter = (item: any) => !(
@@ -172,8 +172,8 @@ export const useReaderMarks = (i18n?: any, context?: any) => {
   const reverseList = <T,>(items: T[]) => markReverse.value ? [...items].reverse() : items
   const isPageSort = (sort: MarkSort) => sort === 'page' || (sort === 'chapter' && isPdfMode.value)
   const groupKey = (item: any, sort: MarkSort) => {
-    if (sort === 'page' || (sort === 'chapter' && isPdfMode.value)) return item.page ? `第${item.page}页` : '未分页'
-    if (sort === 'chapter') return item.chapter || '未分类'
+    if (sort === 'page' || (sort === 'chapter' && isPdfMode.value)) return item.page ? `제${item.page}페이지` : '페이지 없음'
+    if (sort === 'chapter') return item.chapter || '미분류'
     return new Date(item.timestamp || 0).toISOString().slice(0, 10)
   }
   const isItemPageSort = (sort: MarkSort, item: any) => sort === 'page' || (sort === 'chapter' && (isPdfMode.value || item.format === 'pdf'))
@@ -228,16 +228,16 @@ export const useReaderMarks = (i18n?: any, context?: any) => {
     const tagCounts = new Map<string, number>()
     source.forEach(item => getMarkTags(item).forEach(tag => tagCounts.set(tag, (tagCounts.get(tag) || 0) + 1)))
     return [
-      { key: 'types', label: '类型', options: TYPE_OPTIONS.map(opt => ({ ...opt, count: countBy(item => getType(item) === opt.value) })) },
-      { key: 'colors', label: '颜色', options: COLOR_BUCKETS.map(opt => ({ value: opt.value, label: opt.label, count: countBy(item => colorBucket(item) === opt.value) })).filter(opt => opt.count > 0) },
-      { key: 'textStyles', label: '文本样式', options: TEXT_STYLE_OPTIONS.map(opt => ({ ...opt, count: countBy(item => isTextMark(item) && (item.style || 'highlight') === opt.value) })).filter(opt => opt.count > 0) },
-      { key: 'tags', label: '标签', options: [...tagCounts.entries()].map(([value, count]) => ({ value, label: `#${value}`, count })).sort((a, b) => b.count - a.count || a.value.localeCompare(b.value)).slice(0, 24) },
-      { key: 'note', label: '附加条件', options: NOTE_OPTIONS.map(opt => ({ ...opt, count: opt.value === 'all' ? source.length : countBy(item => !!item.note?.trim()) })) },
+      { key: 'types', label: '유형', options: TYPE_OPTIONS.map(opt => ({ ...opt, count: countBy(item => getType(item) === opt.value) })) },
+      { key: 'colors', label: '색상', options: COLOR_BUCKETS.map(opt => ({ value: opt.value, label: opt.label, count: countBy(item => colorBucket(item) === opt.value) })).filter(opt => opt.count > 0) },
+      { key: 'textStyles', label: '텍스트 스타일', options: TEXT_STYLE_OPTIONS.map(opt => ({ ...opt, count: countBy(item => isTextMark(item) && (item.style || 'highlight') === opt.value) })).filter(opt => opt.count > 0) },
+      { key: 'tags', label: '태그', options: [...tagCounts.entries()].map(([value, count]) => ({ value, label: `#${value}`, count })).sort((a, b) => b.count - a.count || a.value.localeCompare(b.value)).slice(0, 24) },
+      { key: 'note', label: '추가 조건', options: NOTE_OPTIONS.map(opt => ({ ...opt, count: opt.value === 'all' ? source.length : countBy(item => !!item.note?.trim()) })) },
     ] as Array<{ key: MarkFilterKey; label: string; options: Array<{ value: string; label: string; count: number }> }>
   })
   const markTagGroups = computed(() => collectMarkTagGroups(allEntries.value, editTagList.value))
 
-  const emptyText = computed(() => isLibraryMode.value && !libraryBooks.value.length ? '暂无书籍' : keyword.value ? (i18n?.notFound || '未找到标注') : (i18n?.empty || '暂无标注'))
+  const emptyText = computed(() => isLibraryMode.value && !libraryBooks.value.length ? '도서 없음' : keyword.value ? (i18n?.notFound || '주석을 찾을 수 없음') : (i18n?.empty || '주석 없음'))
   const isCollapsed = (key: string) => !!collapsed.value[key]
   const getMarkItems = (item: any) => item?.isGroup ? (isCollapsed(item.key) && !keyword.value ? [] : item.items) : [item]
   const toggleGroup = (key: string) => {
@@ -275,7 +275,7 @@ export const useReaderMarks = (i18n?: any, context?: any) => {
   const showEditOptions = (item: any) => (!isPdfMode.value || !!marks.value?.updateMark) && (item?.type === 'highlight' || item?.type === 'note' || !item?.type)
   const getBarColor = (item: any) => isEditing(item) ? (colors[editColor.value] || editColor.value) : (colors[item.color] || rawColor(item) || 'var(--b3-theme-primary)')
   const mainText = (item: any) => {
-    return item.text || item.title || '无内容'
+    return item.text || item.title || '내용 없음'
   }
   const canEdit = (item: any) => !readOnly.value && !item?.readOnly && !!marks.value?.updateMark
   const canDelete = (item: any) => !readOnly.value && !item?.readOnly && !!marks.value?.deleteMark
@@ -311,9 +311,9 @@ export const useReaderMarks = (i18n?: any, context?: any) => {
       Object.assign(item, updates)
       editingId.value = ''
       refreshKey.value++
-      showMsg('已更新')
+      showMsg('업데이트되었습니다')
     } catch (error: any) {
-      showMsg(error?.message || '保存失败', 'error')
+      showMsg(error?.message || '저장 실패', 'error')
     }
   }
 
@@ -345,27 +345,27 @@ export const useReaderMarks = (i18n?: any, context?: any) => {
         if (blockId) count++
       }
       refreshKey.value++
-      showMsg(count ? `${i18n?.syncAll || '同步全部'} ${count}/${items.length}` : (i18n?.importFailed || '导入失败'), count ? 'info' : 'error')
+      showMsg(count ? `${i18n?.syncAll || '모두 동기화'} ${count}/${items.length}` : (i18n?.importFailed || '가져오기 실패'), count ? 'info' : 'error')
     } finally {
       syncingAll.value = false
     }
   }
   const deleteMark = async (item: any) => {
     if (readOnly.value) return
-    if (!marks.value) return showMsg('标注系统未初始化', 'error')
+    if (!marks.value) return showMsg('주석 시스템이 초기화되지 않았습니다', 'error')
     try {
       await marks.value.deleteMark(item)
       refreshKey.value++
-      showMsg('已删除')
+      showMsg('삭제되었습니다')
     } catch {
-      showMsg('删除失败', 'error')
+      showMsg('삭제 실패', 'error')
     }
   }
 
   const goTo = async (item: any) => {
     if (!isLibraryMode.value || !item.bookUrl) return jump(item, activeView.value, activeReader.value, marks.value)
     const book = await bookshelfManager.getBook(item.bookUrl)
-    if (!book) return showMsg('书籍不存在', 'error')
+    if (!book) return showMsg('도서가 존재하지 않습니다', 'error')
     const [{ openOrActivateBook }, { settingsManager }, { usePlugin }] = await Promise.all([import('@/utils/bookOpen'), import('@/composables/useSetting'), import('@/main')])
     await openOrActivateBook(usePlugin(), book, await settingsManager.get(), () => window.dispatchEvent(new CustomEvent('sireader:goto', { detail: { cfi: markTarget(item), id: item.id, bookUrl: item.bookUrl } })))
   }

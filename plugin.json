@@ -14,12 +14,16 @@
   "displayName": {
     "default": "SiReader",
     "en_US": "SiReader",
-    "zh_CN": "思阅"
+    "zh_CN": "思阅",
+    "ko_KR": "SiReader",
+    "ko": "SiReader"
   },
   "description": {
     "default": "专业电子书阅读器，支持 EPUB/PDF/MOBI/TXT/在线小说；PDF 支持高亮、墨迹、形状、表单、印章、签名、图片、截图、搜索、打印、导出和回链，并提供标注笔记、词典、翻译、主题与书架管理",
     "en_US": "Professional eBook reader for EPUB/PDF/MOBI/TXT/online novels. PDFs support highlights, ink, shapes, forms, stamps, signatures, images, screenshots, search, printing, export, and backlinks, with annotation notes, dictionary, translation, themes, and bookshelf management.",
-    "zh_CN": "专业电子书阅读器，支持 EPUB/PDF/MOBI/TXT/在线小说；PDF 支持高亮、墨迹、形状、表单、印章、签名、图片、截图、搜索、打印、导出和回链，并提供标注笔记、词典、翻译、主题与书架管理"
+    "zh_CN": "专业电子书阅读器，支持 EPUB/PDF/MOBI/TXT/在线小说；PDF 支持高亮、墨迹、形状、表单、印章、签名、图片、截图、搜索、打印、导出和回链，并提供标注笔记、词典、翻译、主题与书架管理",
+    "ko_KR": "EPUB/PDF/MOBI/TXT/온라인 소설을 지원하는 전문 전자책 뷰어입니다. PDF 하이라이트, 잉크, 도형, 서식, 도장, 서명, 이미지, 캡처, 검색, 인쇄, 내보내기, 백링크 및 주석 노트, 사전, 번역, 테마, 서재 관리 기능을 제공합니다.",
+    "ko": "EPUB/PDF/MOBI/TXT/온라인 소설을 지원하는 전문 전자책 뷰어입니다. PDF 하이라이트, 잉크, 도형, 서식, 도장, 서명, 이미지, 캡처, 검색, 인쇄, 내보내기, 백링크 및 주석 노트, 사전, 번역, 테마, 서재 관리 기능을 제공합니다."
   },
   "readme": {
     "default": "README.md",
@@ -32,12 +36,32 @@
     ]
   },
   "keywords": [
-    "阅读", "reading", "电子书", "ebook",
-    "pdf", "epub", "mobi", "txt", "azw3", "fb2", "cbz",
-    "sireader", "思阅",
-    "标注", "annotation", "笔记", "note", "书签", "bookmark",
-    "词典", "dictionary",
-    "书源", "book source", "在线小说", "online novel",
-    "主题", "theme"
+    "阅读",
+    "reading",
+    "电子书",
+    "ebook",
+    "pdf",
+    "epub",
+    "mobi",
+    "txt",
+    "azw3",
+    "fb2",
+    "cbz",
+    "sireader",
+    "思阅",
+    "标注",
+    "annotation",
+    "笔记",
+    "note",
+    "书签",
+    "bookmark",
+    "词典",
+    "dictionary",
+    "书源",
+    "book source",
+    "在线小说",
+    "online novel",
+    "主题",
+    "theme"
   ]
 }

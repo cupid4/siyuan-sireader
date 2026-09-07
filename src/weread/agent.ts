@@ -207,7 +207,7 @@ export const createWereadOnlineBookInfo = (book: any): OnlineBookImportInfo => {
     url: pcReadUrlOf(bookId),
     readUrl: pcReadUrlOf(bookId),
     title,
-    author: compact(info?.author || info?.authorName) || '未知作者',
+    author: compact(info?.author || info?.authorName) || '작자 미상',
     coverUrl: compact(info?.cover || info?.coverUrl),
     format: 'txt',
     intro: compact(info?.intro || info?.description || info?.bookIntro),
@@ -237,7 +237,7 @@ export const toWereadHttpBook = (item: any, source: Pick<HttpSourceConfig, 'id' 
   const ratingText = rating ? `评分 ${(rating / 100).toFixed(1)}` : ''
   return {
     name: title,
-    author: compact(info?.author || info?.authorName) || '未知作者',
+    author: compact(info?.author || info?.authorName) || '작자 미상',
     bookUrl: detailUrlOf(bookId),
     readUrl: pcReadUrlOf(bookId),
     canDownload: false,

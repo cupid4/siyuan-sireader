@@ -46,10 +46,10 @@ export default class PluginSample extends Plugin {
 
   private addHotkeys() {
     const cmds = {
-      prevPage: { text: '上一页', hotkey: '', callback: () => window.dispatchEvent(new CustomEvent('sireader:prevPage')) },
-      nextPage: { text: '下一页', hotkey: '', callback: () => window.dispatchEvent(new CustomEvent('sireader:nextPage')) },
-      toggleBookmark: { text: '切换书签', hotkey: '', callback: () => window.dispatchEvent(new CustomEvent('sireader:toggleBookmark')) },
-      quickNote: { text: '快速笔记', hotkey: '', callback: () => window.dispatchEvent(new CustomEvent('sireader:quickNote')) },
+      prevPage: { text: this.i18n.prevPage || '이전 페이지', hotkey: '', callback: () => window.dispatchEvent(new CustomEvent('sireader:prevPage')) },
+      nextPage: { text: this.i18n.nextPage || '다음 페이지', hotkey: '', callback: () => window.dispatchEvent(new CustomEvent('sireader:nextPage')) },
+      toggleBookmark: { text: this.i18n.toggleBookmark || '북마크 전환', hotkey: '', callback: () => window.dispatchEvent(new CustomEvent('sireader:toggleBookmark')) },
+      quickNote: { text: this.i18n.quickNote || '빠른 메모', hotkey: '', callback: () => window.dispatchEvent(new CustomEvent('sireader:quickNote')) },
     }
 
     Object.entries(cmds).forEach(([k, { text, hotkey, callback }]) =>

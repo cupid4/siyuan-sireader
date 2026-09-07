@@ -78,7 +78,7 @@
             <div class="reader-opening__book-meta">
               <div class="reader-opening__meta-row">
                 <span>{{ format }}</span>
-                <em>{{ author || '未知作者' }}</em>
+                <em>{{ author || '작자 미상' }}</em>
               </div>
               <strong :class="titleClass">{{ title }}</strong>
             </div>

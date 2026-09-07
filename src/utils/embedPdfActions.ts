@@ -8,7 +8,7 @@ const PDF_WASM_PUBLIC_URL = '/public/siyuan-sireader/embedpdf/pdfium.wasm'
 const PDF_PLUGIN_RUNTIME_URL = `${PDF_PLUGIN_DIR}/snippet/embedpdf.js`
 const PDF_RUNTIME_PUBLIC_DIR = '/public/siyuan-sireader/embedpdf/snippet'
 const PDF_RUNTIME_PUBLIC_URL = `${PDF_RUNTIME_PUBLIC_DIR}/embedpdf.js`
-const PDF_RUNTIME_FILES = ['embedpdf.js', 'embedpdf-7TNsu-EA.js', 'worker-engine-BkD2-rJn.js', 'direct-engine-BA2WfEti.js', 'browser-BKLM0ThC-CkSOgtCM.js']
+const PDF_RUNTIME_FILES = ['embedpdf.js', 'embedpdf-core-ko.js', 'worker-engine-BkD2-rJn.js', 'direct-engine-BA2WfEti.js', 'browser-BKLM0ThC-CkSOgtCM.js']
 const STAMP_LOCALES = ['zh-CN', 'en']
 const STAMP_PLUGIN_MANIFEST = `${PDF_PLUGIN_DIR}/stamps/{locale}/manifest.json`
 const STAMP_PUBLIC_MANIFEST = '/public/siyuan-sireader/embedpdf/stamps/{locale}/manifest.json'
@@ -39,7 +39,7 @@ export const ensureEmbedPdfWasmUrl = () =>
 export const ensureEmbedPdfRuntime = () =>
   pdfRuntimePromise ||= (async () => {
     const pluginRuntime = await readyUrl(PDF_PLUGIN_RUNTIME_URL)
-    if (pluginRuntime) return await dynamicImport(pluginRuntime)
+    if (pluginRuntime) return await dynamicImport(`${pluginRuntime}?v=2.2.8`)
     if (await Promise.all(PDF_RUNTIME_FILES.map(file => publicReady(`${PDF_RUNTIME_PUBLIC_DIR}/${file}`))).then(items => items.every(Boolean))) {
       return await dynamicImport(absoluteUrl(PDF_RUNTIME_PUBLIC_URL))
     }

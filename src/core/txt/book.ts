@@ -130,7 +130,7 @@ export const createTxtBook = async (source: File | string) => {
 
   const book: any = {
     dir: 'ltr',
-    metadata: { title, author: '未知作者', language: 'zh' },
+    metadata: { title, author: '작자 미상', language: 'zh' },
     toc: chapters.map(chapter => ({ label: chapter.title, href: `txt-${chapter.index}` })),
     sections: chapters.map(chapter => ({
       id: `txt-${chapter.index}`,

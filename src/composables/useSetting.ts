@@ -57,9 +57,9 @@ export const UI_CONFIG = { interfaceItems: [{ key: 'openMode', opts: ['newTab', 
 export const DEFAULT_NAV_ITEMS: NavItem[] = [
   { id: 'bookshelf', icon: 'lucide-library-big', tip: 'bookshelf', enabled: true, order: 0 },
   { id: 'search', icon: 'lucide-book-search', tip: 'search', enabled: true, order: 1 },
-  { id: 'toc', icon: 'lucide-scroll-text', tip: '目录', enabled: true, order: 3 },
-  { id: 'mark', icon: 'lucide-square-pen', tip: '标注', enabled: true, order: 4 },
-  { id: 'appearance', icon: 'lucide-settings-2', tip: '设置', enabled: true, order: 7 }
+  { id: 'toc', icon: 'lucide-scroll-text', tip: 'toc', enabled: true, order: 3 },
+  { id: 'mark', icon: 'lucide-square-pen', tip: 'mark', enabled: true, order: 4 },
+  { id: 'appearance', icon: 'lucide-settings-2', tip: 'appearance', enabled: true, order: 7 }
 ]
 export const NOTE_TARGET_OPTIONS = ['clipboard', 'current', 'notebook', 'document', 'dailynote'] as const
 export const NOTE_MODE_OPTIONS = ['insertBlock', 'prependBlock', 'appendBlock', 'updateBlock', 'prependDoc', 'appendDoc'] as const
@@ -121,7 +121,7 @@ export const SettingRows = defineComponent({
       const rows = props.rows as any[]
       if (props.loading || !rows.length) return h('li', { class: 'b3-list-item b3-list-item--hide-action' }, [
         h('span', { class: 'b3-list-item__toggle fn__hidden' }),
-        h('span', { class: ['b3-list-item__text', { ft__secondary: !props.loadLabel }] }, props.loading ? `${(props.i18n as any)?.loading || '加载中'}...` : (props.loadLabel || props.empty)),
+        h('span', { class: ['b3-list-item__text', { ft__secondary: !props.loadLabel }] }, props.loading ? `${(props.i18n as any)?.loading || '불러오는 중'}...` : (props.loadLabel || props.empty)),
         props.loadLabel && !props.loading ? h('span', { class: 'fn__space' }) : null,
         props.loadLabel && !props.loading ? h('span', { class: 'b3-list-item__action b3-tooltips b3-tooltips__w', 'aria-label': props.loadLabel, onClick: (e: MouseEvent) => stop(e, () => emit('load')) }, [h('svg', [h('use', { 'xlink:href': '#iconRefresh' })])]) : null
       ])
@@ -157,11 +157,11 @@ export const licenseIcon = (type?: string) => ({ lifetime: '#iconLicenseLifetime
 export const licenseTypeText = (type: string | undefined, i18n: any) => i18n?.[type === 'lifetime' ? 'lifetimeVersion' : type === 'annual' ? 'annualVersion' : type === 'monthly' ? 'monthlyVersion' : 'trialVersion'] || type || ''
 export const licenseAvatar = (avatar = '') => avatar || ((globalThis as any)?.window?.siyuan?.user?.userAvatarURL || '')
 export const licenseLines = (license: any, i18n: any) => license ? [
-  `${i18n?.activated || '已激活'} · ${licenseTypeText(license.type, i18n)}`,
+  `${i18n?.activated || '활성화됨'} · ${licenseTypeText(license.type, i18n)}`,
   license.userId && `ID ${license.userId}`,
-  license.activatedAt && `${i18n?.activatedAt || '激活于'} ${new Date(license.activatedAt).toLocaleDateString()}`,
-  license.expiresAt && license.expiresAt !== 0 && `${i18n?.expiresAt || '到期'} ${new Date(license.expiresAt).toLocaleDateString()}`
-].filter(Boolean) : [i18n?.notActivated || '未激活']
+  license.activatedAt && `${i18n?.activatedAt || '활성화 일자'} ${new Date(license.activatedAt).toLocaleDateString()}`,
+  license.expiresAt && license.expiresAt !== 0 && `${i18n?.expiresAt || '만료'} ${new Date(license.expiresAt).toLocaleDateString()}`
+].filter(Boolean) : [i18n?.notActivated || '미활성화']
 export const getLicenseMedia = (license: any, avatar: string, i18n: any) => ({ avatar: licenseAvatar(avatar), icon: licenseIcon(license?.type), lines: licenseLines(license, i18n) })
 
 // ===== 字体 =====
@@ -190,7 +190,7 @@ export const resetToDefaults = (s: any) => Object.assign(s, { textSettings: DEFA
 const applyTpl=(t:string,v:Record<string,string>)=>{const ph:Record<string,string>={};let i=0;Object.entries(v).forEach(([k,val])=>{const p=`\x00${i++}\x00`;ph[p]=val;k.split('|').forEach(s=>t=t.replace(new RegExp(s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'g'),p))});return Object.entries(ph).reduce((r,[p,val])=>r.replace(new RegExp(p,'g'),val),t)}
 const encodeReadableParam=(v:string)=>{try{v=decodeURI(`${v}`)}catch{v=`${v}`}return v.replace(/&/g,'%26').replace(/ /g,'%20').replace(/\(/g,'%28').replace(/\)/g,'%29').replace(/</g,'%3C').replace(/>/g,'%3E')}
 export const buildSireaderLink=(bookUrl:string,cfi:string,id='')=>/^https?:\/\//i.test(cfi)?cfi:`sireader://open?url=${encodeReadableParam(bookUrl)}&cfi=${encodeReadableParam(cfi)}${id?`&id=${encodeReadableParam(id)}`:''}`
-export const formatBookLink=(u:string,t:string,a:string,c:string,f:string,x:string,fmt:string,n='',i='',id='')=>applyTpl(fmt,{'书名|{{title}}':t,'作者|{{author}}':a,'章节|{{chapter}}':c,'位置|{{location}}':f,'链接|{{url}}':buildSireaderLink(u,f,id),'文本|{{text}}':x,'笔记|{{note}}':n,'图片|{{image}}':i}).replace(/> \n/g,'').replace(/\n\n+/g,'\n')
+export const formatBookLink=(u:string,t:string,a:string,c:string,f:string,x:string,fmt:string,n='',i='',id='')=>applyTpl(fmt,{'书名|{{title}}|제목':t,'作者|{{author}}|저자':a,'章节|{{chapter}}|챕터':c,'位置|{{location}}|위치':f,'链接|{{url}}|링크':buildSireaderLink(u,f,id),'文本|{{text}}|텍스트':x,'笔记|{{note}}|메모':n,'图片|{{image}}|이미지':i}).replace(/> \n/g,'').replace(/\n\n+/g,'\n')
 export const parseBookLink=(u:string):{bookUrl:string;cfi:string;id?:string}|null=>{try{u=u.replace(/^<|>$/g,'');const m=u.match(/^sireader:\/\/open\?(.+)$/);if(!m)return null;const p=new URLSearchParams(m[1].replace(/&amp;/g,'&'));let url=p.get('url'),c=p.get('cfi'),id=p.get('id')||undefined;if(!url||!c)return null;const e=url.indexOf('://');if(!id&&e!==-1){const pt=url.slice(e+3);for(const r of[/_(highlight-[^_&]+)$/,/_(note-[^_&]+)$/,/_(bookmark-[^_&]+)$/,/_(vocab-[^_&]+)$/]){const mt=pt.match(r);if(mt){id=mt[1];url=url.slice(0,-(id.length+1));break}}}return{bookUrl:url,cfi:c,id}}catch{return null}}
 
 // ===== 笔记本和文档管理 =====
@@ -199,7 +199,7 @@ export const searchDocs = async (k: string) => {
   const keyword = k.trim()
   return keyword ? await apiSearchDocs(keyword).catch(() => []) : []
 }
-export const createDocInfo = (d: any) => ({ id: d.id || d.blockID || d.rootID || d.path?.split('/').pop()?.replace('.sy', '') || '', name: d.hpath || d.hPath || d.name || d.content || '无标题', path: d.path || '', notebook: d.box || d.notebook || '' })
+export const createDocInfo = (d: any) => ({ id: d.id || d.blockID || d.rootID || d.path?.split('/').pop()?.replace('.sy', '') || '', name: d.hpath || d.hPath || d.name || d.content || '제목 없음', path: d.path || '', notebook: d.box || d.notebook || '' })
 export const useDocSearch = () => { const s = ref({ input: '', results: [] as any[], show: false }); return { state: s, search: async () => { const k = s.value.input.trim(); if (k) (s.value.results = await searchDocs(k), s.value.show = true) }, select: (d: any, f: (doc: DocInfo) => void) => (f(createDocInfo(d)), s.value = { input: '', results: [], show: false }), reset: () => s.value = { input: '', results: [], show: false } } }
 export const useNotebooks = () => { const n = ref<{ id: string; name: string; icon: string }[]>([]); return { notebooks: n, load: async () => !n.value.length && (n.value = await loadNotebooks()) } }
 export const useConfirm = (f: () => void) => { const c = ref(false); return { confirming: c, handleClick: () => c.value ? (f(), c.value = false) : (c.value = true) } }
@@ -236,7 +236,7 @@ typeof window !== 'undefined' && window.addEventListener('sireaderSettingsUpdate
 export function useSetting(plugin: Plugin) { 
   const i18n = plugin.i18n as any
   const load = () => loadTask ||= (async () => { try { settings.value = await settingsManager.get() } catch { settings.value = { ...DEFAULT_SETTINGS }; (window as any).__sireader_settings = settings.value } finally { isLoaded.value = true } })()
-  const save = async () => { try { await settingsManager.save(settings.value), msg.success(i18n?.saved || '设置已保存') } catch { msg.error(i18n?.saveError || '保存失败') } };
+  const save = async () => { try { await settingsManager.save(settings.value), msg.success(i18n?.saved || '설정이 저장되었습니다') } catch { msg.error(i18n?.saveError || '저장 실패') } };
   const loadCustomFonts = async (force = false) => {
     if (!force && customFonts.value.length) return
     if (!force && fontLoadTask) return fontLoadTask

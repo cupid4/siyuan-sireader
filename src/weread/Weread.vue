@@ -401,7 +401,7 @@ const detailTags = computed(() => [
   detailBook.value?.publisher,
 ].filter(Boolean).map(String))
 const detailMeta = computed(() => [
-  detailBook.value?.readingCount ? `${formatCount(detailBook.value.readingCount)} 人在读` : '',
+  detailBook.value?.readingCount ? `${formatCount(detailBook.value.readingCount)} 명이 읽는 중` : '',
   detailBook.value?.totalWords ? `${formatCount(detailBook.value.totalWords)} 字` : '',
   detailBook.value?.newRatingCount ? `${formatCount(detailBook.value.newRatingCount)} 人评分` : '',
   detailBook.value?.publishTime ? `出版 ${String(detailBook.value.publishTime).slice(0, 10)}` : '',
@@ -475,7 +475,7 @@ const chapterNodeById = computed(() => {
 const renderChapterNode = (node: ChapterNode) => {
   const hasChild = !!node.children.length
   const isOpen = isChapterOpen(node)
-  const title = esc(node.chapter?.title || '未命名章节')
+  const title = esc(node.chapter?.title || '제목 없는 챕터')
   const wordCount = Number(node.chapter?.wordCount || 0)
   const row = `<li class="b3-list-item b3-list-item--hide-action" style="--file-toggle-width:${(node.level - 1) * 18 + 18}px" data-id="${esc(node.id)}" data-type="${node.level > 1 ? 'navigation-file' : 'navigation-root'}" data-playlist-item data-toc-item>
     <span style="padding-left:${(node.level - 1) * 18}px" class="b3-list-item__toggle b3-list-item__toggle--hl${hasChild ? '' : ' fn__hidden'}" data-act="toggle">
@@ -492,7 +492,7 @@ const renderChapterNode = (node: ChapterNode) => {
 }
 const chapterTreeHtml = computed(() => chapterTree.value.length
   ? chapterTree.value.map(item => `<ul class="b3-list b3-list--background">${renderChapterNode(item)}</ul>`).join('')
-  : '<ul class="b3-list b3-list--background"><li class="b3-list-item"><span class="b3-list-item__toggle fn__hidden"></span><span class="b3-list-item__text ft__secondary">暂无目录</span></li></ul>')
+  : '<ul class="b3-list b3-list--background"><li class="b3-list-item"><span class="b3-list-item__toggle fn__hidden"></span><span class="b3-list-item__text ft__secondary">목차 없음</span></li></ul>')
 const onChapterTocClick = (event: MouseEvent) => {
   event.stopPropagation()
   const target = event.target as HTMLElement
@@ -513,7 +513,7 @@ const infoOf = (book: any) => book?.bookInfo || book?.book || book?.albumInfo ||
 const bookIdOf = (book: any) => String(infoOf(book)?.bookId || book?.bookId || infoOf(book)?.albumId || book?.albumId || '')
 const bookKey = (book: any) => `${bookIdOf(book)}-${book?.searchIdx || book?.sort || infoOf(book)?.updateTime || ''}`
 const titleOf = (book: any) => String(infoOf(book)?.title || infoOf(book)?.name || '未命名')
-const authorOf = (book: any) => String(infoOf(book)?.author || infoOf(book)?.authorName || '未知作者')
+const authorOf = (book: any) => String(infoOf(book)?.author || infoOf(book)?.authorName || '작자 미상')
 const coverOf = (book: any) => String(infoOf(book)?.cover || '')
 const categoryOf = (book: any) => String(infoOf(book)?.category || infoOf(book)?.newRatingDetail?.title || '')
 const ratingTitleOf = (book: any) => String(infoOf(book)?.newRatingDetail?.title || '')
@@ -527,14 +527,14 @@ const cleanList = (items: any[]) => compact(items).map(String)
 const bookTags = (book: any, mode: 'search' | 'shelf' | 'album' | 'notes' | 'recommend') => {
   if (mode === 'album') return cleanList([`${infoOf(book).trackCount || 0} 集`, infoOf(book).finishStatus, 'API 已返回'])
   if (mode === 'notes') return cleanList([`${book.noteCount || 0} 划线`, `${book.reviewCount || 0} 想法`, `${book.bookmarkCount || 0} 书签`])
-  if (mode === 'shelf') return cleanList([ratingOf(book), ratingTitleOf(book), book.isTop && '置顶', book.secret && '私密', book.finishReading && '已读完', book.noteCount && `${book.noteCount} 划线`, book.reviewCount && `${book.reviewCount} 想法`, book.bookmarkCount && `${book.bookmarkCount} 书签`])
+  if (mode === 'shelf') return cleanList([ratingOf(book), ratingTitleOf(book), book.isTop && '상단 고정', book.secret && '비공개', book.finishReading && '완독', book.noteCount && `${book.noteCount}개 밑줄`, book.reviewCount && `${book.reviewCount}개 생각`, book.bookmarkCount && `${book.bookmarkCount} 书签`])
   if (mode === 'recommend') return cleanList([categoryOf(book), ratingOf(book)])
   return cleanList([ratingOf(book), categoryOf(book)])
 }
 const bookMeta = (book: any, mode: 'search' | 'shelf' | 'notes' | 'recommend') => {
-  if (mode === 'search') return cleanList([book.readingCount && `${book.readingCount} 人在读`, book.searchIdx && `搜索 #${book.searchIdx}`])
-  if (mode === 'shelf') return cleanList([book.readUpdateTime && `最近阅读 ${formatDate(book.readUpdateTime)}`, infoOf(book).updateTime && `更新 ${formatDate(infoOf(book).updateTime)}`])
-  if (mode === 'notes') return cleanList([`${progressOf(book)}%`, book.readUpdateTime && `最近阅读 ${formatDate(book.readUpdateTime)}`])
+  if (mode === 'search') return cleanList([book.readingCount && `${book.readingCount} 명이 읽는 중`, book.searchIdx && `검색 #${book.searchIdx}`])
+  if (mode === 'shelf') return cleanList([book.readUpdateTime && `최근 읽음 ${formatDate(book.readUpdateTime)}`, infoOf(book).updateTime && `更新 ${formatDate(infoOf(book).updateTime)}`])
+  if (mode === 'notes') return cleanList([`${progressOf(book)}%`, book.readUpdateTime && `최근 읽음 ${formatDate(book.readUpdateTime)}`])
   return cleanList([infoOf(book).price && `¥${infoOf(book).price}`, bookIdOf(book) && `ID ${bookIdOf(book)}`])
 }
 const bookActions = (book: any) => [
@@ -752,7 +752,7 @@ const selectBook = async (book: any) => {
     selectedBook.value = { ...selectedBook.value, ...detail.value }
     await checkShelf([selectedBook.value, ...similarBooks.value])
   } catch (error: any) {
-    showMessage(error.message || '加载书籍详情失败', 3000, 'error')
+    showMessage(error.message || '도서 상세 불러오기 실패', 3000, 'error')
   } finally {
     loading.detail = false
   }

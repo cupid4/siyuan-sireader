@@ -20,7 +20,7 @@
 
     <div v-show="showThumbnail" class="fn__flex-1 fn__flex-column sy__file bs-view">
       <div ref="thumbContainer" class="fn__flex-1 bs-view bs-grid">
-        <div v-if="!isPdfMode" class="ft__secondary" style="grid-column:1/-1;padding:8px 12px">仅 PDF 支持缩略图</div>
+        <div v-if="!isPdfMode" class="ft__secondary" style="grid-column:1/-1;padding:8px 12px">PDF만 미리보기를 지원합니다</div>
         <div v-else v-for="i in pageCount" :key="i" class="bs-grid-item">
           <div class="b3-list b3-list--background">
             <div
@@ -33,12 +33,12 @@
                 <img
                   v-if="loadedThumbs[i]"
                   :src="loadedThumbs[i]"
-                  :alt="`第 ${i} 页`"
+                  :alt="`제 ${i} 페이지`"
                   style="display:block;width:100%;height:100%;object-fit:contain"
                 >
                 <div v-else style="display:flex;align-items:center;justify-content:center;width:100%;height:100%">{{ i }}</div>
               </div>
-              <div class="b3-list-item__text">第 {{ i }} 页</div>
+              <div class="b3-list-item__text">제 {{ i }} 페이지</div>
             </div>
           </div>
         </div>
@@ -81,7 +81,7 @@ const currentHref = ref('')
 const isEmbedPdfMode = computed(() => (activeView.value as any)?.engine === 'embedpdf')
 const isPdfMode = computed(() => !!(activeView.value as any)?.isPdf)
 const pageCount = computed(() => (activeView.value as any)?.pageCount || 0)
-const searchPlaceholder = computed(() => '搜索目录...')
+const searchPlaceholder = computed(() => '목차 검색...')
 
 const tocLabel = (item: TOCItem) => item.label || (item as any).title || ''
 const tocKey = (item: TOCItem, parentKey = 'root') => item.href || `${parentKey}/${tocLabel(item)}`
@@ -142,9 +142,9 @@ const branchKeys = computed(() => {
 const hasExpanded = computed(() => branchKeys.value.some(key => expandedKeys.value[key]))
 
 const toolbarActions = computed(() => [
-      { id: 'thumbnail', icon: showThumbnail.value ? '#lucide-scroll-text' : '#lucide-panels-top-left', label: showThumbnail.value ? '目录' : '缩略图', show: isPdfMode.value },
-      { id: 'expand', icon: hasExpanded.value ? '#lucide-panel-top-close' : '#lucide-panel-top-open', label: hasExpanded.value ? '折叠' : '展开', show: !showThumbnail.value },
-      { id: 'reverse', icon: reverse.value ? '#lucide-arrow-up-1-0' : '#lucide-arrow-down-0-1', label: reverse.value ? '倒序' : '正序' },
+      { id: 'thumbnail', icon: showThumbnail.value ? '#lucide-scroll-text' : '#lucide-panels-top-left', label: showThumbnail.value ? '목차' : '미리보기', show: isPdfMode.value },
+      { id: 'expand', icon: hasExpanded.value ? '#lucide-panel-top-close' : '#lucide-panel-top-open', label: hasExpanded.value ? '접기' : '펼치기', show: !showThumbnail.value },
+      { id: 'reverse', icon: reverse.value ? '#lucide-arrow-up-1-0' : '#lucide-arrow-down-0-1', label: reverse.value ? '역순' : '정순' },
     ])
 
 let relocateHandler: any
@@ -181,17 +181,17 @@ const renderTocItem = (item: TOCItem, level: number, parentKey: string, bookmark
   const isCurrent = !!item.href && item.href === currentHref.value
   const hasBookmark = bookmarks.has(tocLabel(item))
   const exportAction = item.href
-    ? `<span class="b3-list-item__action b3-tooltips b3-tooltips__nw" data-act="export" aria-label="${esc(props.i18n?.export || '导出')}"><svg><use xlink:href="#lucide-send"></use></svg></span>`
+    ? `<span class="b3-list-item__action b3-tooltips b3-tooltips__nw" data-act="export" aria-label="${esc(props.i18n?.export || '내보내기')}"><svg><use xlink:href="#lucide-send"></use></svg></span>`
     : ''
   const bookmarkAction = item.href
-    ? `<span class="b3-list-item__action b3-tooltips b3-tooltips__nw" data-act="bookmark" aria-label="${hasBookmark ? '移除书签' : '添加书签'}"><svg><use xlink:href="#iconBookmark"></use></svg></span>`
+    ? `<span class="b3-list-item__action b3-tooltips b3-tooltips__nw" data-act="bookmark" aria-label="${hasBookmark ? (props.i18n?.removeBookmark || '북마크 제거') : (props.i18n?.addBookmark || '북마크 추가')}"><svg><use xlink:href="#iconBookmark"></use></svg></span>`
     : ''
   const hideActionClass = hasBookmark ? '' : ' b3-list-item--hide-action'
   const row = `<li class="b3-list-item${hideActionClass}${isCurrent ? ' b3-list-item--focus' : ''}" style="--file-toggle-width:${level * 18 + 18}px" data-key="${esc(key)}" data-href="${item.href ? encodeURIComponent(item.href) : ''}" data-label="${encodeURIComponent(tocLabel(item))}" data-has-child="${hasChild}" data-type="${level ? 'navigation-file' : 'navigation-root'}" data-toc-item>
     <span style="padding-left:${level * 18}px" class="b3-list-item__toggle b3-list-item__toggle--hl${hasChild ? '' : ' fn__hidden'}">
       <svg class="b3-list-item__arrow${isOpen ? ' b3-list-item__arrow--open' : ''}"><use xlink:href="#iconRight"></use></svg>
     </span>
-    <span class="b3-list-item__text ariaLabel" data-toc-item>${esc(tocLabel(item) || '未命名章节')}</span>
+    <span class="b3-list-item__text ariaLabel" data-toc-item>${esc(tocLabel(item) || '제목 없는 챕터')}</span>
     ${exportAction || bookmarkAction ? '<span class="fn__space"></span>' : ''}
     ${exportAction}
     ${bookmarkAction}
@@ -207,7 +207,7 @@ const renderToc = () => {
   if (!visibleToc.value.length) {
     tocRef.value.innerHTML = isPdfMode.value
       ? ''
-      : '<ul class="b3-list b3-list--background"><li class="b3-list-item"><span class="b3-list-item__toggle fn__hidden"></span><span class="b3-list-item__text ft__secondary">暂无目录</span></li></ul>'
+      : '<ul class="b3-list b3-list--background"><li class="b3-list-item"><span class="b3-list-item__toggle fn__hidden"></span><span class="b3-list-item__text ft__secondary">목차 없음</span></li></ul>'
     return
   }
   ensureExpandedState(visibleToc.value, currentHref.value)
@@ -278,48 +278,48 @@ const sendTocItem = async (href: string, label: string, clipboard = false) => {
       },
     )
   } catch (error: any) {
-    showMsg(error.message || (clipboard ? '复制失败' : '导出失败'), 'error')
+    showMsg(error.message || (clipboard ? '복사 실패' : '내보내기 실패'), 'error')
   }
 }
 
 const copyTocText = async (label: string) => {
   await navigator.clipboard.writeText(label)
-  showMsg('已复制文本')
+  showMsg('텍스트 복사됨')
 }
 
 const copyTocChapterContent = async (href: string, label: string) => {
   try {
-    if (isPdfMode.value) return showMsg('PDF 暂不支持复制目录章节全文', 'error')
+    if (isPdfMode.value) return showMsg('PDF는 목차 챕터 전체 복사를 지원하지 않습니다', 'error')
     const text = await getTocChapterText(activeView.value?.book, href, label)
     await navigator.clipboard.writeText(text)
-    showMsg('已复制章节全文')
+    showMsg('챕터 전체 복사됨')
   } catch (error: any) {
-    showMsg(error.message || '复制章节全文失败', 'error')
+    showMsg(error.message || '챕터 전체 복사 실패', 'error')
   }
 }
 
 const openTocMenu = (event: MouseEvent, href: string, label: string) => {
   const m = new Menu()
   ;[
-    { icon: 'iconUpload', label: '导出', click: () => void sendTocItem(href, label) },
-    { icon: 'iconCopy', label: '复制链接', click: () => void sendTocItem(href, label, true) },
-    { icon: 'iconCopy', label: '复制文本', click: () => void copyTocText(label) },
-    { icon: 'iconCopy', label: '复制章节全文', click: () => void copyTocChapterContent(href, label) },
+    { icon: 'iconUpload', label: '내보내기', click: () => void sendTocItem(href, label) },
+    { icon: 'iconCopy', label: '링크 복사', click: () => void sendTocItem(href, label, true) },
+    { icon: 'iconCopy', label: '텍스트 복사', click: () => void copyTocText(label) },
+    { icon: 'iconCopy', label: '챕터 전체 복사', click: () => void copyTocChapterContent(href, label) },
   ].forEach(item => m.addItem(item))
   m.open({ x: event.clientX, y: event.clientY })
 }
 
 const toggleBookmark = async (href: string, label: string) => {
   const marks = activeReader.value?.marks || (activeView.value as any)?.marks
-  if (!marks?.toggleBookmark || !activeView.value) return showMsg('书签功能未初始化', 'error')
+  if (!marks?.toggleBookmark || !activeView.value) return showMsg('북마크 기능이 초기화되지 않음', 'error')
   try {
     await goToLocation(href)
     await new Promise(resolve => setTimeout(resolve, 200))
     const added = await marks.toggleBookmark(href, label)
-    showMsg(added ? '已添加书签' : '已移除书签')
+    showMsg(added ? '북마크 추가됨' : '북마크 제거됨')
     scheduleRender()
   } catch (error: any) {
-    showMsg(error.message || '操作失败', 'error')
+    showMsg(error.message || '작업 실패', 'error')
   }
 }
 

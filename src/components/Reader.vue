@@ -16,11 +16,11 @@
     <div v-if="!loading" class="reader-toolbar-group">
       <div v-if="showSearch" class="reader-panel" @click.stop>
         <input v-model="searchQuery" class="search-input" :placeholder="i18n.searchPlaceholder||'搜索...'" @keydown.enter="handleSearch" @keydown.esc="showSearch=false" ref="searchInputRef">
-        <button class="toolbar-btn b3-tooltips b3-tooltips__n" @click="handleSearch" aria-label="搜索"><svg><use xlink:href="#iconSearch"/></svg></button>
-        <button class="toolbar-btn b3-tooltips b3-tooltips__n" @click="handleSearchPrev" :disabled="!hasSearchResults" aria-label="上一个"><svg><use xlink:href="#iconUp"/></svg></button>
-        <button class="toolbar-btn b3-tooltips b3-tooltips__n" @click="handleSearchNext" :disabled="!hasSearchResults" aria-label="下一个"><svg><use xlink:href="#iconDown"/></svg></button>
+        <button class="toolbar-btn b3-tooltips b3-tooltips__n" @click="handleSearch" aria-label="검색"><svg><use xlink:href="#iconSearch"/></svg></button>
+        <button class="toolbar-btn b3-tooltips b3-tooltips__n" @click="handleSearchPrev" :disabled="!hasSearchResults" aria-label="이전"><svg><use xlink:href="#iconUp"/></svg></button>
+        <button class="toolbar-btn b3-tooltips b3-tooltips__n" @click="handleSearchNext" :disabled="!hasSearchResults" aria-label="다음"><svg><use xlink:href="#iconDown"/></svg></button>
         <span class="search-count">{{ searchCount }}</span>
-        <button class="toolbar-btn b3-tooltips b3-tooltips__n" @click="handleSearchClear" aria-label="清除"><svg><use xlink:href="#iconClose"/></svg></button>
+        <button class="toolbar-btn b3-tooltips b3-tooltips__n" @click="handleSearchClear" aria-label="지우기"><svg><use xlink:href="#iconClose"/></svg></button>
       </div>
       <div v-if="showQuickMark" class="reader-panel" @click.stop>
         <div class="mark-colors">
@@ -34,16 +34,16 @@
         </div>
       </div>
       <div v-if="!isEmbedPdfMode" class="reader-toolbar" :class="{'is-visible':toolbarVisible}">
-        <button v-if="!isEmbedPdfMode" class="toolbar-btn b3-tooltips b3-tooltips__n" @click.stop="handlePrev" :aria-label="i18n.prevChapter||'上一章'"><svg><use xlink:href="#iconLeft"/></svg></button>
-                <button v-if="!isEmbedPdfMode" class="toolbar-btn b3-tooltips b3-tooltips__n" @click.stop="handleNext" :aria-label="i18n.nextChapter||'下一章'"><svg><use xlink:href="#iconRight"/></svg></button>
-        <button v-if="!isEmbedPdfMode" class="toolbar-btn b3-tooltips b3-tooltips__n" @click.stop="openToc" :aria-label="i18n.toc||'目录'"><svg><use xlink:href="#iconList"/></svg></button>
-        <button v-if="!isEmbedPdfMode" class="toolbar-btn b3-tooltips b3-tooltips__n" :class="{active:hasBookmark}" @click.stop="toggleBookmark" :aria-label="hasBookmark?(i18n.removeBookmark||'删除书签'):(i18n.addBookmark||'添加书签')"><svg><use xlink:href="#iconBookmark"/></svg></button>
-        <button v-if="!isEmbedPdfMode" class="toolbar-btn b3-tooltips b3-tooltips__n" :class="{active:showSearch}" @click.stop="toggleSearch" :aria-label="i18n.search||'搜索'"><svg><use xlink:href="#iconSearch"/></svg></button>
-        <button v-if="!isEmbedPdfMode" class="toolbar-btn toolbar-mark-btn b3-tooltips b3-tooltips__n" :class="{active:quickMarkMode}" @click.stop="toggleQuickMark" :aria-label="quickMarkMode?'退出快速标注':'快速标注'">
+        <button v-if="!isEmbedPdfMode" class="toolbar-btn b3-tooltips b3-tooltips__n" @click.stop="handlePrev" :aria-label="i18n.prevChapter||'이전 장'"><svg><use xlink:href="#iconLeft"/></svg></button>
+                <button v-if="!isEmbedPdfMode" class="toolbar-btn b3-tooltips b3-tooltips__n" @click.stop="handleNext" :aria-label="i18n.nextChapter||'다음 장'"><svg><use xlink:href="#iconRight"/></svg></button>
+        <button v-if="!isEmbedPdfMode" class="toolbar-btn b3-tooltips b3-tooltips__n" @click.stop="openToc" :aria-label="i18n.toc||'목차'"><svg><use xlink:href="#iconList"/></svg></button>
+        <button v-if="!isEmbedPdfMode" class="toolbar-btn b3-tooltips b3-tooltips__n" :class="{active:hasBookmark}" @click.stop="toggleBookmark" :aria-label="hasBookmark?(i18n.removeBookmark||'북마크 제거'):(i18n.addBookmark||'북마크 추가')"><svg><use xlink:href="#iconBookmark"/></svg></button>
+        <button v-if="!isEmbedPdfMode" class="toolbar-btn b3-tooltips b3-tooltips__n" :class="{active:showSearch}" @click.stop="toggleSearch" :aria-label="i18n.search||'검색'"><svg><use xlink:href="#iconSearch"/></svg></button>
+        <button v-if="!isEmbedPdfMode" class="toolbar-btn toolbar-mark-btn b3-tooltips b3-tooltips__n" :class="{active:quickMarkMode}" @click.stop="toggleQuickMark" :aria-label="quickMarkMode?'빠른 주석 종료':'빠른 주석'">
           <svg><use xlink:href="#iconMark"/></svg>
           <span class="mark-indicator" :style="{background:COLORS[quickMarkColor].bg}"></span>
         </button>
-        <button v-if="ttsEnabled&&!isEmbedPdfMode" class="toolbar-btn b3-tooltips b3-tooltips__n" :class="{active:ttsPlaying}" @click.stop="toggleTTS" :aria-label="ttsPlaying?(i18n.ttsPause||'暂停朗读'):(i18n.ttsPlay||'开始朗读')"><svg><use :xlink:href="ttsPlaying?'#iconPause':'#iconPlay'"/></svg></button>
+        <button v-if="ttsEnabled&&!isEmbedPdfMode" class="toolbar-btn b3-tooltips b3-tooltips__n" :class="{active:ttsPlaying}" @click.stop="toggleTTS" :aria-label="ttsPlaying?(i18n.ttsPause||'낭독 일시정지'):(i18n.ttsPlay||'낭독 시작')"><svg><use :xlink:href="ttsPlaying?'#iconPause':'#iconPlay'"/></svg></button>
         <button v-if="isMobile()" class="toolbar-btn b3-tooltips b3-tooltips__n" @click.stop="handleClose" aria-label="Close"><svg><use xlink:href="#iconClose"/></svg></button>
       </div>
     </div>
@@ -168,7 +168,7 @@ const ttsEnabled = computed(() => currentSettings.value?.tts?.enabled || false)
 const ttsPlaying = computed(() => ttsController.isActive.value && !ttsController.paused.value)
 const clearReadingSelection=()=>{try{reader?.getView?.()?.renderer?.getContents?.()?.forEach(({doc}:any)=>doc.defaultView?.getSelection()?.removeAllRanges());document.getSelection()?.removeAllRanges()}catch{}}
 const syncReadingProgress=(detail?:any)=>{const f=detail?.fraction??reader?.getLocation?.()?.fraction??currentView.value?.lastLocation?.fraction;readingProgress.value=Number.isFinite(f)?Math.max(0,Math.min(1,f)):0}
-const toggleTTS = () => {if (!can.value('tts')) return showUpgrade('TTS朗读'); clearReadingSelection(); ttsController.toggle(() => reader, currentSettings.value?.tts, undefined, getBookName())}
+const toggleTTS = () => {if (!can.value('tts')) return showUpgrade('TTS 낭독'); clearReadingSelection(); ttsController.toggle(() => reader, currentSettings.value?.tts, undefined, getBookName())}
 const syncTTS = async () => ttsController.sync(currentSettings.value?.tts?.enabled || false)
 const marks=computed(()=>markManager.value)
 const isEmbedPdfMode=computed(()=>currentView.value?.engine==='embedpdf')
@@ -181,7 +181,7 @@ const embedPdfColor=(color='')=>(COLORS.find(item=>item.color===color)?.bg||colo
 const embedPdfStyle=(type:number,custom?:any)=>type===PDF_REDACT_TYPE?'redaction':custom?.style||Object.entries(PDF_MARKUP_TYPES).find(([,value])=>value===type)?.[0]||'highlight'
 const embedPdfMark=(item:any)=>{
   const a=item?.annotation||item, page=(a.pageIndex??0)+1, bookmark=a.custom?.type==='bookmark', redaction=a.type===PDF_REDACT_TYPE
-  const text=a.custom?.title||a.custom?.text||a.contents||(redaction?'遮蔽':i18n.value.annotation||i18n.value.mark||'Annotation')
+  const text=a.custom?.title||a.custom?.text||a.contents||(redaction?'가리기':i18n.value.annotation||i18n.value.mark||'Annotation')
   const color=[a.strokeColor,a.color,a.fontColor,a.backgroundColor].map(embedPdfColor).find(c=>c&&c!=='transparent')||'#ffcd45'
   return Object.assign(item,{id:a.id,type:bookmark?'bookmark':redaction?'redaction':a.type===1||a.type===3?'note':'highlight',format:'pdf',readOnly:embedPdfNativeIds.has(a.id)||a.flags?.includes('readOnly'),page,cfi:`#page-${page}`,title:bookmark?text:a.custom?.title,text:bookmark?text:a.custom?.text||a.contents||text,note:bookmark||redaction?'':a.custom?.note||a.contents||'',tags:a.custom?.tags||[],blockId:a.custom?.blockId,blockIds:a.custom?.blockIds,color,style:embedPdfStyle(a.type,a.custom),timestamp:new Date(a.created||a.modified||Date.now()).getTime(),chapter:bookmark?'':a.custom?.chapter||`${i18n.value.page||'Page '}${page}${i18n.value.pageSuffix||''}`,customOrder:a.custom?.customOrder})
 }
@@ -223,7 +223,7 @@ const toggleEmbedPdfBookmark=async(loc:any,title?:string)=>{
   const page=typeof loc==='string'?pdfPageFromCfi(loc):Number(loc||0), found=embedPdfMarks.value.find(item=>item.type==='bookmark'&&item.page===page)
   if(!page)return false
   if(found)return await deleteEmbedPdfMark(found),false
-  const text=title||`第${page}页`, now=new Date()
+  const text=title||`제${page}페이지`, now=new Date()
   embedPdfAnnotations.value.createAnnotation(page-1,{id:`bookmark-${Date.now()}`,type:1,pageIndex:page-1,rect:{origin:{x:0,y:0},size:{width:1,height:1}},contents:text,created:now,modified:now,flags:['hidden','noView'],custom:{type:'bookmark',title:text}})
   await loadEmbedPdfMarks()
   return true
@@ -274,9 +274,9 @@ let activeMediaMenu:any=null
 const closeMediaMenu=()=>{activeMediaMenu?.element?.remove?.();activeMediaMenu=null}
 const openMediaMenu=(x:number,y:number,setup:(m:Menu)=>void)=>{closeMediaMenu();const m=new Menu('sireader-media-menu',()=>activeMediaMenu=null);setup(m);activeMediaMenu=m;m.open({x,y})}
 const openImageMenu = ({ item, x, y }: any) => openMediaMenu(x, y, m => {
-  m.addItem({ icon: 'iconCopy', label: '复制图片', click: () => handleCopyToClipboard(item) })
-  m.addItem({ icon: 'iconUpload', label: '导出图片', click: () => handleCopy(item) })
-  m.addItem({ icon: 'iconMark', label: '标注图片', click: async () => markPanelRef.value?.showCard(await (markManager.value as any)?.addImageMark(item.image, item.text, item.cfi), x, y, true) })
+  m.addItem({ icon: 'iconCopy', label: '이미지 복사', click: () => handleCopyToClipboard(item) })
+  m.addItem({ icon: 'iconUpload', label: '이미지 내보내기', click: () => handleCopy(item) })
+  m.addItem({ icon: 'iconMark', label: '이미지 주석', click: async () => markPanelRef.value?.showCard(await (markManager.value as any)?.addImageMark(item.image, item.text, item.cfi), x, y, true) })
 })
 const openImageViewer=async({item}:any)=>{
   if(!item?.image)return
@@ -292,8 +292,8 @@ const openImageViewer=async({item}:any)=>{
   viewer.show();viewer.view(initialViewIndex)
 }
 const openTableMenu = ({ item, x, y }: any) => openMediaMenu(x, y, m => {
-  m.addItem({ icon: 'iconCopy', label: '复制表格', click: () => navigator.clipboard.writeText(item.html || item.text || '') })
-  m.addItem({ icon: 'iconRef', label: '定位表格', click: () => item.cfi && reader?.goTo(item.cfi) })
+  m.addItem({ icon: 'iconCopy', label: '표 복사', click: () => navigator.clipboard.writeText(item.html || item.text || '') })
+  m.addItem({ icon: 'iconRef', label: '표 위치로 이동', click: () => item.cfi && reader?.goTo(item.cfi) })
 })
 const init=async()=>{
   if(!containerRef.value)return
@@ -321,7 +321,7 @@ const init=async()=>{
       await initEmbedPdfMode(loadSource)
     }else{
       reader=createReader({container:viewerContainerRef.value!,settings:getSettings()!,plugin:props.plugin})
-      await reader.open(async()=>await loadSource()||await Promise.reject(new Error('未提供书籍')),props.bookInfo?.format)
+      await reader.open(async()=>await loadSource()||await Promise.reject(new Error('도서가 제공되지 않았습니다')),props.bookInfo?.format)
       const view=reader.getView()
       markManager.value=createMarkManager({format:'epub',view,plugin:props.plugin,bookUrl,bookName:getBookName(),reader})
       !isTemporary&&await markManager.value.init()
@@ -350,7 +350,7 @@ const init=async()=>{
     markPanelRef.value?.setupAnnotationListeners()
     if (!isTemporary && openingSplashKey) sessionStorage.setItem(`sireader-opening:${openingSplashKey}`, '1')
   }catch(e){
-    error.value=e instanceof Error?e.message:'加载失败'
+    error.value=e instanceof Error?e.message:'불러오기 실패'
     markPanelRef.value?.closeAll()
   }finally{
     loading.value=false
@@ -377,7 +377,7 @@ const handlePrev=()=>flipPage('prev')
 const handleNext=()=>flipPage('next')
 const searchInputRef=ref<HTMLInputElement>()
 const toggleSearch=()=>{showSearch.value=!showSearch.value;showSearch.value&&(showQuickMark.value=quickMarkMode.value=false,setTimeout(()=>searchInputRef.value?.focus(),100))}
-const toggleQuickMark=()=>{if(!can.value('quick-mark'))return showUpgrade('快速标注');showQuickMark.value=!showQuickMark.value;showQuickMark.value&&(showSearch.value=false);quickMarkMode.value=showQuickMark.value}
+const toggleQuickMark=()=>{if(!can.value('quick-mark'))return showUpgrade('빠른 주석');showQuickMark.value=!showQuickMark.value;showQuickMark.value&&(showSearch.value=false);quickMarkMode.value=showQuickMark.value}
 const syncSearchNav=(r:any)=>{if(r)searchCurrentIndex.value=reader.searchManager.getCurrentIndex()}
 const handleSearch=async()=>{
   if(!searchQuery.value.trim())return
@@ -392,7 +392,7 @@ const handleSearchNext=()=>moveSearch('next')
 const handleSearchPrev=()=>moveSearch('prev')
 const handleSearchClear=()=>{searchQuery.value='';searchResults.value=[];searchCurrentIndex.value=0;reader?.clearSearch();showSearch.value=false}
 const updateBookmarkState=()=>hasBookmark.value=!!markManager.value?.hasBookmark?.()
-const toggleBookmark=async()=>{if(isEmbedPdfMode.value)return;try{hasBookmark.value=await marks.value?.toggleBookmark?.();window.dispatchEvent(new CustomEvent('sireader:marks-updated'))}catch(e:any){showMessage(e.message||'操作失败',2000,'error')}}
+const toggleBookmark=async()=>{if(isEmbedPdfMode.value)return;try{hasBookmark.value=await marks.value?.toggleBookmark?.();window.dispatchEvent(new CustomEvent('sireader:marks-updated'))}catch(e:any){showMessage(e.message||'작업 실패',2000,'error')}}
 const getBookUrl=()=>currentBookUrl.value||props.bookInfo?.url||props.url||''
 const savePosition=()=>isMobile()&&getBookUrl()&&reader&&saveMobilePosition(getBookUrl(),{cfi:reader.getLocation()?.cfi})
 const syncReaderFocus=(focused:boolean)=>{const bookUrl=getBookUrl();if(!bookUrl||readerFocused===focused)return;readerFocused=focused;window.dispatchEvent(new CustomEvent(focused?'reader:focus':'reader:blur',{detail:{bookUrl}}))}

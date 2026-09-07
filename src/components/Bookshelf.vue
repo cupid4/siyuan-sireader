@@ -1,9 +1,9 @@
-﻿<template>
-  <DockShell class="sr-bookshelf" v-model:search-value="keyword" body-class="sr-books" search-placeholder="搜索书籍或分组..." :toolbar-start-actions="toolbarStartActions" :toolbar-actions="toolbarActions" @click="closePopups" @toolbar-action="handleToolbarAction">
+<template>
+  <DockShell class="sr-bookshelf" v-model:search-value="keyword" body-class="sr-books" search-placeholder="도서 또는 그룹 검색..." :toolbar-start-actions="toolbarStartActions" :toolbar-actions="toolbarActions" @click="closePopups" @toolbar-action="handleToolbarAction">
       <Transition name="fade">
         <div v-if="!displayItems.length" class="sr-empty">
-          <div>{{ keyword ? '未找到内容' : '暂无内容' }}</div>
-          <div v-if="!keyword" class="sr-empty-hint">暂无书籍，点击右上角添加内容</div>
+          <div>{{ keyword ? '검색 결과가 없습니다' : '내용이 없습니다' }}</div>
+          <div v-if="!keyword" class="sr-empty-hint">도서가 없습니다. 우측 상단에서 내용을 추가하세요</div>
         </div>
 
         <component :is="View" v-else :key="`${viewMode}-${currentGroup || 'root'}`" v-bind="viewProps" @select-group="setGroup" @book-click="readBook" @book-menu="showContextMenu" @group-menu="showGroupMenu" @move-book-group="moveBookToGroup" @move-book-home="moveBookToHome" @toggle-select-book="toggleSelectBook" />
@@ -22,12 +22,12 @@
       <div v-if="confirmDelete" class="sr-selection-bar sr-confirm-bar" :class="{ 'sr-confirm-bar--above-selection': selecting }" @click.stop>
         <div class="sr-selection-detail"><span class="sr-selection-count">{{ confirmDeleteText }}</span></div>
         <div class="sr-row sr-actions-end">
-          <button class="b3-button b3-button--outline" type="button" @click="clearConfirmDelete">取消</button>
-          <button v-if="confirmDelete?.type === 'group'" class="b3-button b3-button--outline" type="button" @click="confirmDeleteAction(false)">确认删除</button>
+          <button class="b3-button b3-button--outline" type="button" @click="clearConfirmDelete">취소</button>
+          <button v-if="confirmDelete?.type === 'group'" class="b3-button b3-button--outline" type="button" @click="confirmDeleteAction(false)">삭제 확인</button>
           <template v-else>
-            <button v-if="confirmDelete?.phase !== 'delete'" class="b3-button b3-button--outline" type="button" @click="confirmDeleteAction(false)">确认移除</button>
-            <button v-if="confirmDelete?.phase !== 'delete'" class="b3-button b3-button--remove" type="button" @click="confirmDelete.phase = 'delete'">彻底删除</button>
-            <button v-else class="b3-button b3-button--remove" type="button" @click="confirmDeleteAction(true)">确认彻底删除</button>
+            <button v-if="confirmDelete?.phase !== 'delete'" class="b3-button b3-button--outline" type="button" @click="confirmDeleteAction(false)">제거 확인</button>
+            <button v-if="confirmDelete?.phase !== 'delete'" class="b3-button b3-button--remove" type="button" @click="confirmDelete.phase = 'delete'">완전 삭제</button>
+            <button v-else class="b3-button b3-button--remove" type="button" @click="confirmDeleteAction(true)">완전 삭제 확인</button>
           </template>
         </div>
       </div>
@@ -35,41 +35,41 @@
     <template #overlay>
       <Transition name="fade">
         <div v-if="modalMode" class="sr-manage-panel" @click.stop>
-        <header class="sr-modal__head"><span>{{ modalTitle }}</span><span class="block__icon block__icon--show b3-tooltips b3-tooltips__nw sr-icon-btn" aria-label="关闭" @click="closePopups"><svg><use xlink:href="#lucide-x" /></svg></span></header>
+        <header class="sr-modal__head"><span>{{ modalTitle }}</span><span class="block__icon block__icon--show b3-tooltips b3-tooltips__nw sr-icon-btn" aria-label="닫기" @click="closePopups"><svg><use xlink:href="#lucide-x" /></svg></span></header>
 
         <div class="sr-modal__body">
           <template v-if="modalMode === 'manage'">
-            <div class="sr-form-item"><span class="ft__secondary">快捷操作</span><div class="sr-grid2"><button class="b3-button b3-button--outline" type="button" title="从电脑选择 EPUB、PDF 等电子书文件，导入后由插件托管文件和封面。" @click="openLocalImport">本地导入</button><button class="b3-button b3-button--outline" type="button" title="浏览或搜索思源同步盘中的电子书，并添加到书架。" @click="setImportMode('cloud')">思盘导入</button><button class="b3-button b3-button--outline" type="button" title="创建普通文件夹分组。书籍加入后会从首页独立书籍区移出，属于实际归类。" @click="startEditGroup()">手动分组</button><button class="b3-button b3-button--outline" type="button" title="创建按标签、格式、状态、评分等条件动态显示的分组。智能分组不移动书籍归属，也不会把书从首页隐藏。" @click="startEditGroup(undefined, 'smart')">智能分组</button></div></div>
+            <div class="sr-form-item"><span class="ft__secondary">빠른 작업</span><div class="sr-grid2"><button class="b3-button b3-button--outline" type="button" title="컴퓨터에서 EPUB, PDF 등의 전자책 파일을 선택하여 가져옵니다." @click="openLocalImport">로컬 가져오기</button><button class="b3-button b3-button--outline" type="button" title="동기화 드라이브의 전자책을 탐색하여 서재에 추가합니다." @click="setImportMode('cloud')">동기화 드라이브 가져오기</button><button class="b3-button b3-button--outline" type="button" title="일반 폴더 그룹을 생성합니다." @click="startEditGroup()">수동 그룹</button><button class="b3-button b3-button--outline" type="button" title="조건에 따라 동적으로 도서를 표시하는 스마트 그룹을 생성합니다." @click="startEditGroup(undefined, 'smart')">스마트 그룹</button></div></div>
 
             <template v-if="!editingGroup && importMode === 'link'">
               <div class="sr-editor sr-import-card">
-                <div class="sr-editor-head"><strong>输入链接</strong></div>
-                <textarea class="b3-text-field fn__block sr-textarea" v-model="importDraft" placeholder="每行一个本地路径、file 链接、网络直链或思盘链接" />
-                <div class="sr-row"><button class="b3-button b3-button--outline sr-grow" type="button" @click="parseImportUrls" :disabled="!importDraft.trim() || importParsing">{{ importParsing ? '解析中...' : '解析链接' }}</button></div>
+                <div class="sr-editor-head"><strong>링크 입력</strong></div>
+                <textarea class="b3-text-field fn__block sr-textarea" v-model="importDraft" placeholder="한 줄에 하나씩 로컬 경로, file 링크, 웹 링크 또는 동기화 드라이브 링크를 입력하세요" />
+                <div class="sr-row"><button class="b3-button b3-button--outline sr-grow" type="button" @click="parseImportUrls" :disabled="!importDraft.trim() || importParsing">{{ importParsing ? '분석 중...' : '링크 분석' }}</button></div>
               </div>
             </template>
 
             <template v-if="!editingGroup && importMode === 'cloud'">
               <div class="sr-editor sr-import-card">
-                <div class="sr-editor-head"><strong>思盘导入</strong></div>
-                <div class="sr-row"><input v-model.trim="cloudInput" class="b3-text-field sr-grow" placeholder="输入思盘路径" @keyup.enter="openCloudInput" /><button class="b3-button b3-button--outline" type="button" :disabled="cloudLoading || !cloudInput" @click="openCloudInput">输入</button></div>
-                <div class="sr-row"><input v-model.trim="cloudKeyword" class="b3-text-field sr-grow" placeholder="输入关键词搜索" @keyup.enter="searchCloud" /><button class="b3-button b3-button--outline" type="button" :disabled="cloudLoading || !cloudKeyword" @click="searchCloud">搜索</button></div>
-                <div class="sr-row"><button class="b3-button b3-button--outline sr-grow" type="button" :disabled="cloudLoading" @click="listCloud('/')">浏览全部</button></div>
+                <div class="sr-editor-head"><strong>동기화 드라이브 가져오기</strong></div>
+                <div class="sr-row"><input v-model.trim="cloudInput" class="b3-text-field sr-grow" placeholder="동기화 드라이브 경로 입력" @keyup.enter="openCloudInput" /><button class="b3-button b3-button--outline" type="button" :disabled="cloudLoading || !cloudInput" @click="openCloudInput">입력</button></div>
+                <div class="sr-row"><input v-model.trim="cloudKeyword" class="b3-text-field sr-grow" placeholder="검색어 입력" @keyup.enter="searchCloud" /><button class="b3-button b3-button--outline" type="button" :disabled="cloudLoading || !cloudKeyword" @click="searchCloud">검색</button></div>
+                <div class="sr-row"><button class="b3-button b3-button--outline sr-grow" type="button" :disabled="cloudLoading" @click="listCloud('/')">모두 탐색</button></div>
                 <div v-if="cloudError" class="sr-muted">{{ cloudError }}</div>
                 <View v-if="cloudResults.length" class="sr-cloud-results" :items="cloudDisplayItems" mode="compact" dense selecting select-groups :selected-urls="cloudSelectedPaths" :show-group-meta="false" :status-map="STATUS_MAP" :get-cover-url="getCoverUrl" :get-group-cover-urls="() => []" :get-progress="() => ''" @select-group="listCloud" @toggle-select-book="book => toggleCloudPath(book.url)" />
-                <div v-if="cloudResults.length" class="sr-row sr-actions-end"><button class="b3-button b3-button--outline" type="button" :disabled="cloudLoading || !cloudSelectedPaths.length" @click="parseSelectedCloud">{{ cloudLoading ? '解析中...' : `解析选中 ${cloudSelectedPaths.length || ''}` }}</button></div>
+                <div v-if="cloudResults.length" class="sr-row sr-actions-end"><button class="b3-button b3-button--outline" type="button" :disabled="cloudLoading || !cloudSelectedPaths.length" @click="parseSelectedCloud">{{ cloudLoading ? '분석 중...' : `선택 항목 분석 ${cloudSelectedPaths.length || ''}` }}</button></div>
               </div>
             </template>
 
             <div v-if="showImportItems" class="sr-editor sr-import-card">
-              <div class="sr-editor-head"><strong>待导入</strong></div>
-              <div class="sr-row"><button class="sr-chip" :class="{ 'is-active': importAllSelected }" type="button" @click="importAllSelected = !importAllSelected">{{ importAllSelected ? '取消全选' : '全选导入' }}</button><span>{{ importSelectedCount }} / {{ importItems.length }}</span><span v-if="importParsing">{{ importProgress }}%</span></div>
+              <div class="sr-editor-head"><strong>가져오기 대기</strong></div>
+              <div class="sr-row"><button class="sr-chip" :class="{ 'is-active': importAllSelected }" type="button" @click="importAllSelected = !importAllSelected">{{ importAllSelected ? '선택 해제' : '모두 선택' }}</button><span>{{ importSelectedCount }} / {{ importItems.length }}</span><span v-if="importParsing">{{ importProgress }}%</span></div>
               <View class="sr-import-list" :items="importDisplayItems" mode="list" :status-map="STATUS_MAP" :get-cover-url="getCoverUrl" :get-progress="getProgress" @toggle-import="toggleImportItem" />
             </div>
 
             <div v-if="showImportItems" class="sr-editor sr-import-card sr-import-card--sm">
-              <div class="sr-editor-head"><strong>导入设置</strong></div>
-              <input v-model="importBulkTags" class="b3-text-field sr-input" placeholder="添加标签，用逗号分隔" />
+              <div class="sr-editor-head"><strong>가져오기 설정</strong></div>
+              <input v-model="importBulkTags" class="b3-text-field sr-input" placeholder="태그 추가, 쉼표로 구분" />
               <div v-if="allTags.length" class="sr-chips"><button v-for="t in allTags.slice(0, 10)" :key="t.tag" class="sr-chip" type="button" :class="{ 'is-active': importTagList.includes(t.tag) }" @click="toggleImportTag(t.tag)">#{{ t.tag }}</button></div>
               <template v-for="row in importApplyRows" :key="row.key"><span class="sr-muted">{{ row.label }}</span><div class="sr-chips"><button v-for="item in row.items" :key="item.key" class="sr-chip" type="button" :class="{ 'is-active': item.active }" @click="item.click">{{ item.label }}</button></div></template>
             </div>
@@ -77,41 +77,41 @@
           </template>
 
               <div v-if="modalMode === 'organize' && groups.length">
-                <span class="ft__secondary">{{ modalMode === 'organize' ? '分组排序' : '现有分组' }}</span>
+                <span class="ft__secondary">{{ modalMode === 'organize' ? '그룹 정렬' : '기존 그룹' }}</span>
                 <template v-for="g in groups" :key="g.id">
                   <div class="sr-group-item">
-                    <button class="b3-button sr-grow sr-group-label" :class="g.type === 'smart' ? 'b3-button--cancel' : 'b3-button--outline'" type="button" @click="setGroup(g.id, true)"><strong>{{ g.name }}</strong><span class="sr-entry-meta">{{ groupCounts[g.id] || 0 }} 本</span></button>
+                    <button class="b3-button sr-grow sr-group-label" :class="g.type === 'smart' ? 'b3-button--cancel' : 'b3-button--outline'" type="button" @click="setGroup(g.id, true)"><strong>{{ g.name }}</strong><span class="sr-entry-meta">{{ groupCounts[g.id] || 0 }} 권</span></button>
                     <span class="sr-inline" @click.stop><span v-for="a in groupRowActions(g)" :key="a.label" class="block__icon block__icon--show b3-tooltips b3-tooltips__nw sr-icon-btn sr-icon-btn--sm" :class="a.warn && 'block__icon--warning'" :aria-label="a.label" @click="a.click"><svg><use :xlink:href="a.icon" /></svg></span></span>
                   </div>
                 </template>
               </div>
               <div v-if="modalMode === 'manage' && editingGroup" class="sr-editor">
-                <div class="sr-editor-head"><strong>{{ groups.some(g => g.id === editingGroup!.id) ? '编辑分组' : '新增分组' }}</strong></div>
+                <div class="sr-editor-head"><strong>{{ groups.some(g => g.id === editingGroup!.id) ? '그룹 편집' : '새 그룹 추가' }}</strong></div>
                 <div v-for="f in groupFields" :key="f.key" class="sr-form-item">
                   <span class="ft__secondary">{{ f.label }}</span>
                   <input v-if="f.type === 'text'" v-model="editingGroup[f.key]" class="b3-text-field sr-input" :placeholder="f.placeholder" />
                   <div v-else class="sr-chips"><button v-for="opt in f.options" :key="opt.value" class="sr-chip" :class="{ 'is-active': isGroupRuleActive(f, opt.value) }" type="button" @click="toggleGroupRule(f, opt.value)">{{ opt.label }}</button></div>
                 </div>
-                <div class="sr-row sr-actions-end sr-editor-actions"><button class="b3-button b3-button--outline" type="button" @click="editingGroup = null">取消</button><button class="b3-button b3-button--outline" type="button" @click="saveGroup">保存</button></div>
+                <div class="sr-row sr-actions-end sr-editor-actions"><button class="b3-button b3-button--outline" type="button" @click="editingGroup = null">취소</button><button class="b3-button b3-button--outline" type="button" @click="saveGroup">저장</button></div>
               </div>
 
           <template v-if="modalMode === 'manage'">
             <div class="sr-row sr-actions-end sr-section-line">
-              <button class="b3-button b3-button--outline" type="button" title="关闭面板，不导入当前待导入项目。" @click="closePopups">取消</button>
-              <button v-if="showImportItems && importMode === 'file'" class="b3-button b3-button--outline" type="button" title="复制文件到插件托管目录，适合希望书籍随插件数据一起管理的本地文件。" @click="confirmImport('file')" :disabled="!importSelectedCount || importParsing || importing">复制导入</button>
-              <button v-if="showImportItems" class="b3-button b3-button--outline" type="button" title="保留原始路径或链接添加到书架，支持 file 链接、本地路径、网络直链和思盘链接。" @click="confirmImport('link')" :disabled="!importLinkSelectedCount || importParsing || importing">链接导入</button>
+              <button class="b3-button b3-button--outline" type="button" title="패널을 닫습니다." @click="closePopups">취소</button>
+              <button v-if="showImportItems && importMode === 'file'" class="b3-button b3-button--outline" type="button" title="파일을 플러그인 관리 디렉터리로 복사하여 가져옵니다." @click="confirmImport('file')" :disabled="!importSelectedCount || importParsing || importing">복사하여 가져오기</button>
+              <button v-if="showImportItems" class="b3-button b3-button--outline" type="button" title="원본 경로 또는 링크를 유지하여 서재에 추가합니다." @click="confirmImport('link')" :disabled="!importLinkSelectedCount || importParsing || importing">링크로 가져오기</button>
             </div>
           </template>
 
           <template v-else-if="modalMode === 'organize'">
             <label class="sr-form-item">
-              <span class="ft__secondary">视图</span><div class="sr-chips"><button v-for="mode in VIEW_MODES" :key="mode.value" class="sr-chip" :class="{ 'is-active': viewMode === mode.value }" type="button" @click="viewMode = mode.value">{{ mode.label }}</button></div>
+              <span class="ft__secondary">보기</span><div class="sr-chips"><button v-for="mode in VIEW_MODES" :key="mode.value" class="sr-chip" :class="{ 'is-active': viewMode === mode.value }" type="button" @click="viewMode = mode.value">{{ mode.label }}</button></div>
             </label>
 
             <label class="sr-form-item">
-              <span class="ft__secondary">排序</span>
+              <span class="ft__secondary">정렬</span>
               <div class="sr-chips"><button v-for="[value, label] in SORTS" :key="value" class="sr-chip" :class="{ 'is-active': sortType === value }" type="button" @click="sortType = value">{{ label }}</button></div>
-              <div class="sr-chips"><button class="sr-chip" :class="{ 'is-active': sortReverse }" type="button" @click="sortReverse = !sortReverse">反向排序</button></div>
+              <div class="sr-chips"><button class="sr-chip" :class="{ 'is-active': sortReverse }" type="button" @click="sortReverse = !sortReverse">역순 정렬</button></div>
             </label>
 
             <label v-for="s in filterSections" :key="s.key" class="sr-form-item">
@@ -119,8 +119,8 @@
             </label>
 
             <div class="sr-row sr-actions-end sr-section-line">
-              <button class="b3-button b3-button--outline" type="button" @click="resetOrganize">重置整理</button>
-              <button class="b3-button b3-button--outline" type="button" @click="closePopups">完成</button>
+              <button class="b3-button b3-button--outline" type="button" @click="resetOrganize">정리 초기화</button>
+              <button class="b3-button b3-button--outline" type="button" @click="closePopups">완료</button>
             </div>
           </template>
 
@@ -137,16 +137,16 @@
               </template>
               <template v-else-if="f.key === 'groups'">
                 <div v-if="folderGroups.length" class="sr-chips"><button v-for="g in folderGroups" :key="g.id" class="sr-chip" type="button" :class="{ 'is-active': editForm.groups.includes(g.id) }" @click="toggleGroup(g.id)">{{ g.name }}</button></div>
-                <span v-else class="sr-muted">暂无分组</span>
+                <span v-else class="sr-muted">그룹 없음</span>
               </template>
               <template v-else-if="f.key === 'bind'">
-                <input v-if="!editForm.bindDocId" v-model="bindSearch" class="b3-text-field sr-input" placeholder="搜索文档..." @input="searchBindDoc" />
-                <div v-if="bindResults.length" class="sr-chips"><button v-for="d in bindResults.slice(0, 8)" :key="getDocId(d) || d.path" class="sr-chip" type="button" @click.stop="selectBindDoc(d)">{{ d.hPath || d.content || d.name || '无标题' }}</button></div>
-                <div v-else-if="editForm.bindDocId"><div class="sr-chips sr-chips-stack"><span class="sr-chip is-active">{{ editForm.bindDocName }}</span><button class="sr-chip is-danger" type="button" @click="unbindDoc">解绑</button></div></div>
+                <input v-if="!editForm.bindDocId" v-model="bindSearch" class="b3-text-field sr-input" placeholder="문서 검색..." @input="searchBindDoc" />
+                <div v-if="bindResults.length" class="sr-chips"><button v-for="d in bindResults.slice(0, 8)" :key="getDocId(d) || d.path" class="sr-chip" type="button" @click.stop="selectBindDoc(d)">{{ d.hPath || d.content || d.name || '제목 없음' }}</button></div>
+                <div v-else-if="editForm.bindDocId"><div class="sr-chips sr-chips-stack"><span class="sr-chip is-active">{{ editForm.bindDocName }}</span><button class="sr-chip is-danger" type="button" @click="unbindDoc">연결 해제</button></div></div>
               </template>
             </div>
 
-            <div class="sr-row sr-actions-end sr-section-line"><button class="b3-button b3-button--outline" type="button" @click="closePopups">取消</button><button class="b3-button b3-button--outline" type="button" @click="saveEdit">保存</button></div>
+            <div class="sr-row sr-actions-end sr-section-line"><button class="b3-button b3-button--outline" type="button" @click="closePopups">취소</button><button class="b3-button b3-button--outline" type="button" @click="saveEdit">저장</button></div>
           </template>
 
           <template v-else-if="modalMode === 'detail'">
@@ -215,9 +215,9 @@ const folderGroups = computed(() => groups.value.filter(g => g.type === 'folder'
 const currentGroupIsSmart = computed(() => !!groups.value.find(g => g.id === currentGroup.value && g.type === 'smart'))
 const gridStyle = computed(() => viewMode.value === 'grid' ? { gridTemplateColumns: `repeat(auto-fill,minmax(${props.coverSize || 120}px,1fr))` } : {})
 const viewModeIcon = computed(() => VIEW_MODE_ICONS[viewMode.value])
-const toolbarStartActions = computed(() => currentGroup.value ? [{ id: 'back', icon: '#iconBack', label: '返回' }] : [])
-const toolbarActions = computed(() => [{ id: 'view', icon: viewModeIcon.value, label: '切换视图' }, { id: 'select', icon: selecting.value ? '#iconCheck' : '#iconUncheck', label: selecting.value ? '退出选择' : '选择书籍' }, { id: 'organize', icon: '#lucide-sliders-horizontal', label: '整理书架' }, { id: 'manage', icon: '#lucide-book-plus', label: '添加内容' }])
-const modalTitle = computed(() => modalMode.value ? MODAL_TITLES[modalMode.value] : '书架')
+const toolbarStartActions = computed(() => currentGroup.value ? [{ id: 'back', icon: '#iconBack', label: '뒤로' }] : [])
+const toolbarActions = computed(() => [{ id: 'view', icon: viewModeIcon.value, label: '보기 전환' }, { id: 'select', icon: selecting.value ? '#iconCheck' : '#iconUncheck', label: selecting.value ? '선택 종료' : '도서 선택' }, { id: 'organize', icon: '#lucide-sliders-horizontal', label: '서재 정리' }, { id: 'manage', icon: '#lucide-book-plus', label: '도서 추가' }])
+const modalTitle = computed(() => modalMode.value ? MODAL_TITLES[modalMode.value] : '서재')
 const panelCover = computed(() => panelBook.value ? getCoverUrl(panelBook.value) : '')
 const viewProps = computed(() => ({ items: displayItems.value, mode: viewMode.value, gridStyle: gridStyle.value, groupCounts: groupCounts.value, statusMap: STATUS_MAP, getCoverUrl, getGroupCoverUrls, getProgress, currentGroup: currentGroup.value, currentGroupIsSmart: currentGroupIsSmart.value, selecting: selecting.value, selectedUrls: selectedBookUrls.value, hiddenItems: props.hiddenItems || [] }))
 
@@ -246,29 +246,29 @@ const selectedCount = computed(() => selectedBookUrls.value.length)
 const filterSections = computed(() => buildFilterSections(stats.value, allTags.value))
 const importDisplayItems = computed(() => importItems.value.map(item => ({ type: 'import' as const, data: item })))
 const cloudDisplayItems = computed(() => cloudNodesToItems(cloudResults.value))
-const batchRatingOptions = computed(() => [...RATING_OPTIONS, [0, '清除评分']] as Array<[number, string]>)
+const batchRatingOptions = computed(() => [...RATING_OPTIONS, [0, '평점 삭제']] as Array<[number, string]>)
 const parseList = (value: string) => Array.from(new Set(value.split(/[,，\n]/).map(t => t.trim()).filter(Boolean)))
 const importTagList = computed(() => parseList(importBulkTags.value))
 const batchTagList = computed(() => parseList(batchTags.value))
 const showImportItems = computed(() => !editingGroup.value && importHasItems.value)
 const optionChip = (key: string, label: string, active: boolean, click: () => void) => ({ key, label, active, click })
 const importApplyRows = computed(() => [
-  { key: 'groups', label: '导入到分组', items: folderGroups.value.map(g => optionChip(g.id, g.name, importBulkGroups.value.includes(g.id), () => toggleImportGroup(g.id))) },
-  { key: 'status', label: '导入后状态', items: [optionChip('none', '不改状态', !importBulkStatus.value, () => importBulkStatus.value = ''), ...STATUS_OPTIONS.map(([v, label]) => optionChip(v, label, importBulkStatus.value === v, () => importBulkStatus.value = v))] },
-  { key: 'rating', label: '导入后评分', items: [optionChip('0', '不评分', !importBulkRating.value, () => importBulkRating.value = 0), ...STAR_OPTIONS.map(v => optionChip(String(v), '★'.repeat(v), importBulkRating.value === v, () => importBulkRating.value = v))] },
+  { key: 'groups', label: '그룹으로 가져오기', items: folderGroups.value.map(g => optionChip(g.id, g.name, importBulkGroups.value.includes(g.id), () => toggleImportGroup(g.id))) },
+  { key: 'status', label: '가져오기 후 상태', items: [optionChip('none', '상태 유지', !importBulkStatus.value, () => importBulkStatus.value = ''), ...STATUS_OPTIONS.map(([v, label]) => optionChip(v, label, importBulkStatus.value === v, () => importBulkStatus.value = v))] },
+  { key: 'rating', label: '가져오기 후 평점', items: [optionChip('0', '평점 없음', !importBulkRating.value, () => importBulkRating.value = 0), ...STAR_OPTIONS.map(v => optionChip(String(v), '★'.repeat(v), importBulkRating.value === v, () => importBulkRating.value = v))] },
 ].filter(row => row.items.length))
-const actionLabels = { tags: [['add', '添加'], ['remove', '移除'], ['set', '替换']], groups: [['add', '加入'], ['remove', '移出'], ['set', '设为']] } as const
+const actionLabels = { tags: [['add', '추가'], ['remove', '제거'], ['set', '바꾸기']], groups: [['add', '추가'], ['remove', '제외'], ['set', '설정']] } as const
 const batchRows = computed(() => {
   const modeButton = (value: typeof batchMode.value, label: string) => ({ key: `m-${value}`, label, active: batchMode.value === value, disabled: !selectedCount.value, click: () => batchMode.value = batchMode.value === value ? null : value })
   const chip = (key: string, label: string, click: () => void, extra = {}) => ({ key, label, click, ...extra })
   const rows: any[] = [
-    { key: 'main', items: [{ key: 'count', text: `选中 ${selectedCount.value}` }, chip('clear', '清空', clearSelection, { disabled: !selectedCount.value }), chip('all', '全选', selectDisplayedBooks), chip('invert', '反选', invertDisplayedBooks), chip('exit', '退出', exitSelection, { primary: true })] },
-    { key: 'ops', items: [modeButton('rate', '评分'), modeButton('status', '状态'), modeButton('tags', '标签'), modeButton('groups', '分组'), chip('remove', '移除', confirmBatchRemove, { danger: true, disabled: !selectedCount.value })] },
+    { key: 'main', items: [{ key: 'count', text: `선택됨 ${selectedCount.value}` }, chip('clear', '비우기', clearSelection, { disabled: !selectedCount.value }), chip('all', '전체 선택', selectDisplayedBooks), chip('invert', '반전 선택', invertDisplayedBooks), chip('exit', '종료', exitSelection, { primary: true })] },
+    { key: 'ops', items: [modeButton('rate', '평점'), modeButton('status', '상태'), modeButton('tags', '태그'), modeButton('groups', '그룹'), chip('remove', '제거', confirmBatchRemove, { danger: true, disabled: !selectedCount.value })] },
   ]
   if (batchMode.value === 'rate') rows.push({ key: 'rate', items: batchRatingOptions.value.map(([v, label]) => chip(`r-${v}`, label, () => batchOp('rate', v))) })
   if (batchMode.value === 'status') rows.push({ key: 'status', items: STATUS_OPTIONS.map(([v, label]) => chip(`s-${v}`, label, () => batchOp('status', v))) })
-  if (batchMode.value === 'tags') rows.push({ key: 'tags', items: [...actionLabels.tags.map(([v, label]) => chip(`ta-${v}`, label, () => batchTagAction.value = v, { active: batchTagAction.value === v })), { key: 'input', input: '标签，用逗号分隔' }, ...allTags.value.slice(0, 8).map(t => chip(`t-${t.tag}`, `#${t.tag}`, () => toggleBatchTag(t.tag), { active: batchTagList.value.includes(t.tag) })), chip('apply-tags', '应用', () => batchOp('tags')), chip('clear-tags', '清空标签', () => batchClearList('tags', `清空 ${batchScopeText()} 的标签`, '已清空标签'), { danger: true })] })
-  if (batchMode.value === 'groups') rows.push({ key: 'groups', items: [...actionLabels.groups.map(([v, label]) => chip(`ga-${v}`, label, () => batchGroupAction.value = v, { active: batchGroupAction.value === v })), ...(folderGroups.value.length ? folderGroups.value.map(g => chip(`g-${g.id}`, g.name, () => toggleBatchGroup(g.id), { active: batchGroups.value.includes(g.id) })) : [{ key: 'empty', text: '暂无分组' }]), chip('apply-groups', '应用', () => batchOp('groups')), chip('clear-groups', '移出所有', () => batchClearList('groups', `将 ${batchScopeText()} 移出所有分组`, '已移出分组'), { danger: true })] })
+  if (batchMode.value === 'tags') rows.push({ key: 'tags', items: [...actionLabels.tags.map(([v, label]) => chip(`ta-${v}`, label, () => batchTagAction.value = v, { active: batchTagAction.value === v })), { key: 'input', input: '태그, 쉼표로 구분' }, ...allTags.value.slice(0, 8).map(t => chip(`t-${t.tag}`, `#${t.tag}`, () => toggleBatchTag(t.tag), { active: batchTagList.value.includes(t.tag) })), chip('apply-tags', '적용', () => batchOp('tags')), chip('clear-tags', '태그 비우기', () => batchClearList('tags', `선택한 ${batchScopeText()}의 태그 비우기`, '태그가 비워졌습니다'), { danger: true })] })
+  if (batchMode.value === 'groups') rows.push({ key: 'groups', items: [...actionLabels.groups.map(([v, label]) => chip(`ga-${v}`, label, () => batchGroupAction.value = v, { active: batchGroupAction.value === v })), ...(folderGroups.value.length ? folderGroups.value.map(g => chip(`g-${g.id}`, g.name, () => toggleBatchGroup(g.id), { active: batchGroups.value.includes(g.id) })) : [{ key: 'empty', text: '그룹 없음' }]), chip('apply-groups', '적용', () => batchOp('groups')), chip('clear-groups', '모두 제외', () => batchClearList('groups', `선택한 ${batchScopeText()}을 모든 그룹에서 제외`, '그룹에서 제외되었습니다'), { danger: true })] })
   return rows
 })
 const filterMap = { status: filterStatus, rating: filterRating, format: filterFormats, tags: filterTags }
@@ -279,7 +279,7 @@ const confirmBatchRemove = () => { if (selectedCount.value) confirmDelete.value 
 const setImportMode = (mode: ImportMode) => { editingGroup.value = null; resetImport(); importMode.value = mode }
 const groupRowActions = (g: GroupConfig) => {
   const i = groups.value.findIndex(item => item.id === g.id)
-  return [i > 0 && { label: '上移', icon: '#iconUp', click: () => moveGroup(g, -1 as const) }, i < groups.value.length - 1 && { label: '下移', icon: '#iconDown', click: () => moveGroup(g, 1 as const) }, { label: '打开分组', icon: '#iconFolder', click: () => setGroup(g.id, true) }, { label: '编辑分组', icon: '#iconEdit', click: () => startEditGroup(g) }, { label: '删除分组', icon: '#lucide-trash-2', warn: true, click: () => confirmGroupDelete(g) }].filter(Boolean) as any[]
+  return [i > 0 && { label: '위로 이동', icon: '#iconUp', click: () => moveGroup(g, -1 as const) }, i < groups.value.length - 1 && { label: '아래로 이동', icon: '#iconDown', click: () => moveGroup(g, 1 as const) }, { label: '그룹 열기', icon: '#iconFolder', click: () => setGroup(g.id, true) }, { label: '그룹 편집', icon: '#iconEdit', click: () => startEditGroup(g) }, { label: '그룹 삭제', icon: '#lucide-trash-2', warn: true, click: () => confirmGroupDelete(g) }].filter(Boolean) as any[]
 }
 const handleToolbarAction = (id: string) => {
   closeMenu()
@@ -343,10 +343,10 @@ const reloadStorage = async (force = false) => {
     reloading = false
   }
 }
-const showResult = (success: number, failed: number, ok: string, fail = `成功${success}本，失败${failed}本`, time = 2000) => showMessage(failed ? fail : ok, time, failed ? 'error' : 'info')
-const ratingItems = (handler: (rating: number) => void | Promise<void>, clearLabel = '清除') => [1, 2, 3, 4, 5].map(value => ({ icon: 'iconStar', label: `${'★'.repeat(value)} ${value}星`, click: () => handler(value) })).concat([{ type: 'separator' }, { icon: 'iconClose', label: clearLabel, click: () => handler(0) }])
+const showResult = (success: number, failed: number, ok: string, fail = `성공 ${success}권, 실패 ${failed}권`, time = 2000) => showMessage(failed ? fail : ok, time, failed ? 'error' : 'info')
+const ratingItems = (handler: (rating: number) => void | Promise<void>, clearLabel = '초기화') => [1, 2, 3, 4, 5].map(value => ({ icon: 'iconStar', label: `${'★'.repeat(value)} ${value}점`, click: () => handler(value) })).concat([{ type: 'separator' }, { icon: 'iconClose', label: clearLabel, click: () => handler(0) }])
 const statusItems = (handler: (status: BookStatus) => void | Promise<void>) => STATUS_OPTIONS.map(([k, v]) => ({ icon: MENU_ICONS.status[k], label: v, click: () => handler(k) }))
-const assignEditForm = (book: Book) => { const b = book as any; Object.assign(editForm.value, { title: b.title, author: b.author, tags: b.tags.join(', '), rating: b.rating || 0, status: b.status, cover: b.cover || '', groups: b.groups || [], bindDocId: b.bindDocId || '', bindDocName: b.bindDocName || '' }) }
+const assignEditForm = (book: Book) => { const b = book as any; const author = (!b.author || b.author === '未知作者' || b.author === 'Unknown' || b.author === '作/译者未知') ? '작자 미상' : b.author; Object.assign(editForm.value, { title: b.title, author, tags: b.tags.join(', '), rating: b.rating || 0, status: b.status, cover: b.cover || '', groups: b.groups || [], bindDocId: b.bindDocId || '', bindDocName: b.bindDocName || '' }) }
 const setListText = (target: typeof importBulkTags | typeof batchTags, values: string[]) => { target.value = Array.from(new Set(values)).join(', ') }
 const toggleTextList = (target: typeof importBulkTags | typeof batchTags, value: string) => { const values = parseList(target.value); toggleArrayItem(values, value); setListText(target, values) }
 const toggleImportTag = (tag: string) => toggleTextList(importBulkTags, tag)
@@ -355,16 +355,16 @@ const toggleBatchTag = (tag: string) => toggleTextList(batchTags, tag)
 const toggleBatchGroup = (gid: string) => toggleArrayItem(batchGroups.value, gid)
 const buildImportPatch = (): BookBulkPatch => ({ ...(importTagList.value.length ? { tags: { add: importTagList.value } } : {}), ...(importBulkStatus.value ? { status: importBulkStatus.value } : {}), ...(importBulkRating.value ? { rating: importBulkRating.value } : {}), ...(importBulkGroups.value.length ? { groups: { add: importBulkGroups.value } } : {}) })
 const buildBatchListPatch = (kind: 'tags' | 'groups', values?: string[]): BookBulkPatch => ({ [kind]: { [kind === 'tags' ? batchTagAction.value : batchGroupAction.value]: values ?? (kind === 'tags' ? batchTagList.value : batchGroups.value) } })
-const batchScopeText = () => `已选 ${selectedCount.value} 本`
+const batchScopeText = () => `선택됨 ${selectedCount.value}권`
 const confirmDeleteText = computed(() => confirmDelete.value?.type === 'batch'
-  ? confirmDelete.value?.phase === 'delete' ? `确认彻底删除 ${confirmDelete.value.count} 本？将删除标注数据` : `确认移除 ${confirmDelete.value.count} 本？将删除托管文件，保留阅读数据`
+  ? confirmDelete.value?.phase === 'delete' ? `선택한 ${confirmDelete.value.count}권을 완전히 삭제하시겠습니까? 주석 데이터가 함께 삭제됩니다` : `선택한 ${confirmDelete.value.count}권을 제거하시겠습니까? 관리 파일은 삭제되지만 독서 데이터는 유지됩니다`
   : confirmDelete.value?.type === 'group'
-    ? '确认删除该分组？'
-    : confirmDelete.value?.phase === 'delete' ? '确认彻底删除？将删除标注数据' : '确认移除？将删除托管文件，保留阅读数据')
+    ? '이 그룹을 삭제하시겠습니까?'
+    : confirmDelete.value?.phase === 'delete' ? '완전 삭제하시겠습니까? 주석 데이터가 함께 삭제됩니다' : '제거하시겠습니까? 관리 파일은 삭제되지만 독서 데이터는 유지됩니다')
 
 const createGroupDraft = (type: GroupType): GroupConfig => ({ id: `group_${Date.now()}`, name: '', icon: type === 'smart' ? '⚡' : '📁', order: groups.value.length, type, rules: createDefaultGroupRules() })
 const startEditGroup = (g?: GroupConfig, type: GroupType = 'folder') => {
-  if (!g && !can.value(type === 'smart' ? 'smart-group' : 'folder-group')) return showUpgrade(type === 'smart' ? '智能分组' : '分组')
+  if (!g && !can.value(type === 'smart' ? 'smart-group' : 'folder-group')) return showUpgrade(type === 'smart' ? '스마트 그룹' : '그룹')
   editingGroup.value = g ? { ...g, rules: g.rules || createDefaultGroupRules() } : createGroupDraft(type)
   modalMode.value = 'manage'
 }
@@ -372,26 +372,26 @@ const saveGroup = async () => {
   if (!editingGroup.value?.name.trim()) return (editingGroup.value = null)
   const { created } = await bookshelfManager.upsertGroup(editingGroup.value)
   await refresh()
-  showMessage(`已${created ? '创建' : '更新'}：${editingGroup.value.name}`, 2000, 'info')
+  showMessage(`그룹이 ${created ? '생성' : '수정'}되었습니다: ${editingGroup.value.name}`, 2000, 'info')
   editingGroup.value = null
   modalMode.value = 'manage'
 }
-const moveGroup = async (group: GroupConfig, offset: -1 | 1) => { if (await bookshelfManager.moveGroup(group.id, offset)) { await refreshGroups(); showMessage(`已${offset < 0 ? '上移' : '下移'}：${group.name}`, 1200, 'info') } }
+const moveGroup = async (group: GroupConfig, offset: -1 | 1) => { if (await bookshelfManager.moveGroup(group.id, offset)) { await refreshGroups(); showMessage(`${group.name} 그룹이 ${offset < 0 ? '위로' : '아래로'} 이동되었습니다`, 1200, 'info') } }
 const deleteGroup = async (g: GroupConfig) => {
   await bookshelfManager.deleteGroup(g.id)
   if (currentGroup.value === g.id) currentGroup.value = null
   clearConfirmDelete()
   await refresh()
-  showMessage(`已删除：${g.name}`, 2000, 'info')
+  showMessage(`삭제됨: ${g.name}`, 2000, 'info')
 }
 
 const showGroupMenu = (group: GroupConfig, e: MouseEvent) => {
   e.preventDefault(); const m = new Menu()
   ;[
-    { icon: 'iconFolder', label: '打开分组', click: () => setGroup(group.id) },
-    { icon: 'iconEdit', label: '重命名', click: () => startEditGroup(group) },
+    { icon: 'iconFolder', label: '그룹 열기', click: () => setGroup(group.id) },
+    { icon: 'iconEdit', label: '이름 변경', click: () => startEditGroup(group) },
     { type: 'separator' },
-    { icon: 'iconTrashcan', label: '删除', click: () => { closeMenu(); confirmGroupDelete(group) } },
+    { icon: 'iconTrashcan', label: '삭제', click: () => { closeMenu(); confirmGroupDelete(group) } },
   ].forEach(item => m.addItem(item))
   openMenu(m, e)
 }
@@ -406,16 +406,16 @@ const moveBookToGroup = async (url: string, groupId: string) => {
   await bookshelfManager.updateBookField(url, 'group', groupId)
   await refresh()
   const group = folderGroups.value.find(item => item.id === groupId)
-  showMessage(`已移动到：${group?.name || '分组'}`, 2000, 'info')
+  showMessage(`이동됨: ${group?.name || '그룹'}`, 2000, 'info')
 }
 const moveBookToHome = async (url: string) => {
   await bookshelfManager.updateBookField(url, 'group', 'home')
   await refresh()
-  showMessage('已移出分组', 2000, 'info')
+  showMessage('그룹에서 제외되었습니다', 2000, 'info')
 }
 const readBook = async (book: Book) => {
   closeMenu(); const full = await bookshelfManager.getBook(book.url)
-  if (!full) return showMessage('加载失败', 3000, 'error')
+  if (!full) return showMessage('불러오기 실패', 3000, 'error')
   if (isMobile()) window.dispatchEvent(new CustomEvent('reader:mobile-open', { detail: { book: full } }))
   else emit('read', full)
 }
@@ -423,14 +423,14 @@ const removeBook = async (book: Book, deleteData = false) => {
   const res = await bookshelfManager.removeBook(book.url, deleteData).then(ok => ({ success: ok ? 1 : 0, failed: ok ? 0 : 1 }))
   clearConfirmDelete()
   await refresh()
-  showResult(res.success, res.failed, deleteData ? '已彻底删除' : '已移除并删除托管文件', '删除失败')
+  showResult(res.success, res.failed, deleteData ? '완전 삭제되었습니다' : '제거 및 관리 파일이 삭제되었습니다', '삭제 실패')
 }
 const removeBatchBooks = async (deleteData = false) => {
   if (confirmDelete.value?.type !== 'batch') return
   const res = await bookshelfManager.removeBooks(confirmDelete.value.urls, deleteData)
   clearConfirmDelete()
   await refresh()
-  showResult(res.success, res.failed, deleteData ? `已彻底删除 ${res.success} 本` : `已移除并删除托管文件 ${res.success} 本`)
+  showResult(res.success, res.failed, deleteData ? `완전 삭제되었습니다: ${res.success}권` : `제거되었습니다: ${res.success}권`)
   if (!res.failed) exitSelection()
 }
 const confirmDeleteAction = async (deleteData = false) => {
@@ -441,15 +441,15 @@ const confirmDeleteAction = async (deleteData = false) => {
   return removeBatchBooks(deleteData)
 }
 const openLocalImport = async () => { setImportMode('file'); await pickAndParseFiles() }
-const parseImportUrls = async () => { try { await parseDraftUrls() } catch (e) { showMessage(e instanceof Error ? e.message : '解析失败', 2000, 'error') } }
+const parseImportUrls = async () => { try { await parseDraftUrls() } catch (e) { showMessage(e instanceof Error ? e.message : '분석 실패', 2000, 'error') } }
 const runCloud = async (fallback: string, fn: () => Promise<void>) => {
   cloudLoading.value = true; cloudError.value = ''
   try { await fn() } catch (e) { cloudError.value = e instanceof Error ? e.message : fallback } finally { cloudLoading.value = false }
 }
-const listCloud = (path = '/') => runCloud('浏览失败', async () => { cloudResults.value = mergeCloudNodes(cloudResults.value, await listCloudNodes(path), path) })
-const searchCloud = () => runCloud('搜索失败', async () => {
+const listCloud = (path = '/') => runCloud('탐색 실패', async () => { cloudResults.value = mergeCloudNodes(cloudResults.value, await listCloudNodes(path), path) })
+const searchCloud = () => runCloud('검색 실패', async () => {
   cloudResults.value = mergeCloudNodes([], await searchCloudNodes(cloudKeyword.value))
-  cloudError.value = cloudResults.value.length ? '' : '未找到电子书'
+  cloudError.value = cloudResults.value.length ? '' : '전자책을 찾을 수 없습니다'
 })
 const openCloudInput = async () => {
   const path = normalizeCloudPath(cloudInput.value)
@@ -457,7 +457,7 @@ const openCloudInput = async () => {
     if (isCloudBookPath(path)) return await parseCloudImports([path])
     if (path !== '/') await listCloud('/')
     await listCloud(path)
-  } catch (e) { cloudError.value = e instanceof Error ? e.message : '打开失败' }
+  } catch (e) { cloudError.value = e instanceof Error ? e.message : '열기 실패' }
 }
 const toggleCloudPath = (path: string) => toggleArrayItem(cloudSelectedPaths.value, path)
 const cloudUrls = (paths: string[]) => Array.from(new Set(paths.map(siyuanCloudUrl))).join('\n')
@@ -467,16 +467,16 @@ const collectCloudBooks = async (path: string): Promise<string[]> => {
 }
 const rememberCloudGroup = async (groupPath: string, paths: string[]) => {
   const gid = `cloud:${normalizeCloudPath(groupPath)}`
-  await bookshelfManager.upsertGroup({ id: gid, name: groupPath === '/' ? '思盘' : groupPath.split('/').pop() || '思盘分组', order: groups.value.length, type: 'folder' })
+  await bookshelfManager.upsertGroup({ id: gid, name: groupPath === '/' ? '동기화 드라이브' : groupPath.split('/').pop() || '드라이브 그룹', order: groups.value.length, type: 'folder' })
   cloudImportGroups.value = { ...cloudImportGroups.value, ...Object.fromEntries(paths.map(path => [siyuanCloudUrl(path), [gid]])) }
 }
 const parseCloudImports = async (paths: string[]) => { const draft = importDraft.value; await parseDraftUrls(cloudUrls(paths)); importDraft.value = draft }
-const parseSelectedCloud = () => runCloud('导入失败', async () => {
+const parseSelectedCloud = () => runCloud('가져오기 실패', async () => {
   const files = cloudSelectedPaths.value.filter(isCloudBookPath)
   const folders = await Promise.all(cloudSelectedPaths.value.filter(path => !isCloudBookPath(path)).map(async path => [path, await collectCloudBooks(path)] as const))
   await Promise.all(folders.map(([path, paths]) => rememberCloudGroup(path, paths)))
   files.push(...folders.flatMap(([, paths]) => paths))
-  if (!files.length) { cloudError.value = '未找到电子书'; return }
+  if (!files.length) { cloudError.value = '전자책을 찾을 수 없습니다'; return }
   await parseCloudImports(files)
   await refreshGroups()
 })
@@ -488,53 +488,53 @@ const confirmImport = async (mode: 'file' | 'link') => {
   await loadBooks()
   await refreshGroups()
   allTags.value = await bookshelfManager.getAllTags()
-  showResult(res.success, res.failed, `导入${res.success}本`, `成功${res.success}本，失败${res.failed}本`, 3000)
+  showResult(res.success, res.failed, `가져옴: ${res.success}권`, `성공 ${res.success}권, 실패 ${res.failed}권`, 3000)
   if (!res.failed) closePopups()
 }
 const toggleImportItem = (item: { selected: boolean; error: string; loading: boolean }) => { if (!item.error && !item.loading) item.selected = !item.selected }
-const openBookPanel = async (mode: 'detail' | 'edit', book: Book) => { closeMenu(); panelBook.value = await bookshelfManager.getBook(book.url) || book; if (mode === 'edit') { if (!can.value('book-edit')) return showUpgrade('书籍编辑'); editingBook.value = panelBook.value.url; resetEditForm(); assignEditForm(panelBook.value) } modalMode.value = mode }
+const openBookPanel = async (mode: 'detail' | 'edit', book: Book) => { closeMenu(); panelBook.value = await bookshelfManager.getBook(book.url) || book; if (mode === 'edit') { if (!can.value('book-edit')) return showUpgrade('도서 편집'); editingBook.value = panelBook.value.url; resetEditForm(); assignEditForm(panelBook.value) } modalMode.value = mode }
 const importBookAnnotations = async (book: Book) => {
-  if (String(book.format || '').toLowerCase() !== 'pdf') return showMessage('批注导入暂仅支持 PDF', 2000, 'error')
+  if (String(book.format || '').toLowerCase() !== 'pdf') return showMessage('주석 가져오기는 현재 PDF만 지원합니다', 2000, 'error')
   try {
     const result = await importPdfAnnotationsForBook(book.url)
     if (result.canceled) return
     await refresh()
-    showMessage(result.imported ? `已导入 ${result.imported} 条批注，跳过 ${result.skipped} 条` : '未识别到可导入批注', 3000, result.imported ? 'info' : 'error')
+    showMessage(result.imported ? `주석 ${result.imported}개를 가져왔으며 ${result.skipped}개를 건너뛰었습니다` : '가져올 수 있는 주석이 없습니다', 3000, result.imported ? 'info' : 'error')
   } catch (e) {
-    showMessage(e instanceof Error ? e.message : '批注导入失败', 3000, 'error')
+    showMessage(e instanceof Error ? e.message : '주석 가져오기 실패', 3000, 'error')
   }
 }
 const showContextMenu = (book: Book, e: MouseEvent) => {
   e.preventDefault(); const hasBinding = !!(book as any).bindDocId
-  const ratingMenu = ratingItems(rating => updateBookField(book, 'rating', rating, rating ? `已评 ${rating} 星` : '已清除评分'))
-  const groupMenu = (book.groups.length ? [{ icon: 'iconFiles', label: '首页', click: () => updateBookField(book, 'group', 'home', '已移动到首页') }, ...(folderGroups.value.length ? [{ type: 'separator' }] : [])] : []).concat(groups.value.map(g => g.type === 'smart' ? { icon: 'iconInfo', label: `${g.name}（智能分组不能作为移动目标）`, click: () => showMessage('智能分组按条件动态显示，不能移动到智能分组', 2000, 'info') } : { icon: 'iconFolder', label: g.name, click: () => updateBookField(book, 'group', g.id, `已移动到：${g.name}`) }))
+  const ratingMenu = ratingItems(rating => updateBookField(book, 'rating', rating, rating ? `${rating}점으로 평가함` : '평점 삭제됨'))
+  const groupMenu = (book.groups.length ? [{ icon: 'iconFiles', label: '홈', click: () => updateBookField(book, 'group', 'home', '홈으로 이동되었습니다') }, ...(folderGroups.value.length ? [{ type: 'separator' }] : [])] : []).concat(groups.value.map(g => g.type === 'smart' ? { icon: 'iconInfo', label: `${g.name} (스마트 그룹은 대상이 될 수 없습니다)`, click: () => showMessage('스마트 그룹은 조건에 따라 동적으로 표시되므로 이동할 수 없습니다', 2000, 'info') } : { icon: 'iconFolder', label: g.name, click: () => updateBookField(book, 'group', g.id, `이동됨: ${g.name}`) }))
   const m = new Menu()
-  ;[{ icon: 'iconPlay', label: '打开阅读', click: () => readBook(book) }, { icon: 'iconInfo', label: '详细信息', click: () => openBookPanel('detail', book) }, { icon: 'iconCheck', label: selectedBookUrls.value.includes(book.url) ? '取消选择' : '选择此书', click: () => toggleSelectBook(book) }, { icon: 'iconStar', label: '评分', type: 'submenu', submenu: ratingMenu }, { icon: 'iconCheck', label: '标记状态', type: 'submenu', submenu: statusItems(status => updateBookField(book, 'status', status, `已标记为${STATUS_MAP[status]}`)) }, { icon: 'iconFolder', label: '移动到', type: 'submenu', submenu: groupMenu }, { icon: hasBinding ? 'iconLinkOff' : 'iconLink', label: hasBinding ? '解除绑定' : '绑定文档', click: () => openBookPanel('edit', book) }, { icon: 'iconDownload', label: '导入批注', click: () => importBookAnnotations(book) }, { type: 'separator' }, { icon: 'iconEdit', label: '编辑信息', click: () => openBookPanel('edit', book) }, { icon: 'iconTrashcan', label: '移除', click: () => { closeMenu(); confirmDelete.value = { type: 'book', id: book.url, item: book } } }].forEach(item => m.addItem(item as any))
+  ;[{ icon: 'iconPlay', label: '열어서 읽기', click: () => readBook(book) }, { icon: 'iconInfo', label: '상세정보', click: () => openBookPanel('detail', book) }, { icon: 'iconCheck', label: selectedBookUrls.value.includes(book.url) ? '선택 취소' : '도서 선택', click: () => toggleSelectBook(book) }, { icon: 'iconStar', label: '평점', type: 'submenu', submenu: ratingMenu }, { icon: 'iconCheck', label: '상태 표시', type: 'submenu', submenu: statusItems(status => updateBookField(book, 'status', status, `상태가 ${STATUS_MAP[status]}(으)로 변경되었습니다`)) }, { icon: 'iconFolder', label: '이동', type: 'submenu', submenu: groupMenu }, { icon: hasBinding ? 'iconLinkOff' : 'iconLink', label: hasBinding ? '연결 해제' : '문서 연결', click: () => openBookPanel('edit', book) }, { icon: 'iconDownload', label: '주석 가져오기', click: () => importBookAnnotations(book) }, { type: 'separator' }, { icon: 'iconEdit', label: '정보 편집', click: () => openBookPanel('edit', book) }, { icon: 'iconTrashcan', label: '제거', click: () => { closeMenu(); confirmDelete.value = { type: 'book', id: book.url, item: book } } }].forEach(item => m.addItem(item as any))
   openMenu(m, e)
 }
 
 const batchOp = async (op: 'rate' | 'status' | 'remove' | 'tags' | 'groups', value?: number | BookStatus) => {
-  if (!can.value('batch-operation')) return showUpgrade('批量操作')
+  if (!can.value('batch-operation')) return showUpgrade('일괄 작업')
   const urls = selectedBookUrls.value
   if (!urls.length) return
-  const done = async (res: any, action: string) => { batchMode.value = null; await refresh(); allTags.value = await bookshelfManager.getAllTags(); showResult(res.success, res.failed, `${action} ${res.success} 本`); if (!res.failed) exitSelection() }
+  const done = async (res: any, action: string) => { batchMode.value = null; await refresh(); allTags.value = await bookshelfManager.getAllTags(); showResult(res.success, res.failed, `${action} ${res.success}권`); if (!res.failed) exitSelection() }
   if (op === 'remove') return confirmBatchRemove()
-  if (op === 'rate') return done(await bookshelfManager.batchUpdateRating(urls, Number(value || 0)), value ? '已评分' : '已清除')
-  if (op === 'status') return done(await bookshelfManager.batchUpdateStatus(urls, value as BookStatus), '已更新')
+  if (op === 'rate') return done(await bookshelfManager.batchUpdateRating(urls, Number(value || 0)), value ? '평가 완료' : '삭제 완료')
+  if (op === 'status') return done(await bookshelfManager.batchUpdateStatus(urls, value as BookStatus), '업데이트 완료')
   if (op === 'tags') {
-    if (!batchTagList.value.length) return showMessage('请输入标签', 2000, 'error')
-    return done(await bookshelfManager.batchUpdateBooks(urls, buildBatchListPatch('tags')), '已更新标签')
+    if (!batchTagList.value.length) return showMessage('태그를 입력하세요', 2000, 'error')
+    return done(await bookshelfManager.batchUpdateBooks(urls, buildBatchListPatch('tags')), '태그가 업데이트되었습니다')
   }
-  if (!batchGroups.value.length) return showMessage('请选择分组', 2000, 'error')
-  return done(await bookshelfManager.batchUpdateBooks(urls, buildBatchListPatch('groups')), '已更新分组')
+  if (!batchGroups.value.length) return showMessage('그룹을 선택하세요', 2000, 'error')
+  return done(await bookshelfManager.batchUpdateBooks(urls, buildBatchListPatch('groups')), '그룹이 업데이트되었습니다')
 }
 const batchClearList = async (kind: 'tags' | 'groups', text: string, ok: string) => {
-  if (!selectedCount.value || !confirm(`确定${text}？`)) return
+  if (!selectedCount.value || !confirm(`정말 ${text}하시겠습니까?`)) return
   const res = await bookshelfManager.batchUpdateBooks(selectedBookUrls.value, { [kind]: { set: [] } })
   batchMode.value = null
   await refresh()
   if (kind === 'tags') allTags.value = await bookshelfManager.getAllTags()
-  showResult(res.success, res.failed, `${ok} ${res.success} 本`)
+  showResult(res.success, res.failed, `${ok} ${res.success}권`)
   if (!res.failed) exitSelection()
 }
 const editFields = computed(() => buildEditFields())
@@ -545,17 +545,17 @@ const resetEditForm = () => { editForm.value = createDefaultEditForm(); bindSear
 const saveEdit = async () => {
   if (!editingBook.value) return
   const result = await bookshelfManager.updateBookInfo(editingBook.value, editForm.value)
-  if (!result.success) return showMessage(result.error || '保存失败', 2000, 'error')
+  if (!result.success) return showMessage(result.error || '저장 실패', 2000, 'error')
   await refresh()
   allTags.value = await bookshelfManager.getAllTags()
-  showMessage('保存成功', 2000, 'info')
+  showMessage('저장되었습니다', 2000, 'info')
   closePopups()
 }
 const toggleTag = (tag: string) => { const tags = parseList(editForm.value.tags); toggleArrayItem(tags, tag); editForm.value.tags = tags.join(', ') }
 const toggleGroup = (gid: string) => toggleArrayItem(editForm.value.groups, gid)
 const getDocId = (d: any) => d.id || d.blockID || d.rootID || d.path?.split('/').pop()?.replace('.sy', '') || ''
 const searchBindDoc = async () => { const q = bindSearch.value.trim(); bindResults.value = q ? await searchDocs(q).catch(() => []) : [] }
-const selectBindDoc = (d: any) => { const id = getDocId(d); if (!id) return showMessage('文档 ID 无效', 2000, 'error'); Object.assign(editForm.value, { bindDocId: id, bindDocName: d.hPath || d.content || d.name || '无标题' }); bindSearch.value = ''; bindResults.value = [] }
+const selectBindDoc = (d: any) => { const id = getDocId(d); if (!id) return showMessage('문서 ID가 올바르지 않습니다', 2000, 'error'); Object.assign(editForm.value, { bindDocId: id, bindDocName: d.hPath || d.content || d.name || '제목 없음' }); bindSearch.value = ''; bindResults.value = [] }
 const unbindDoc = () => { editForm.value.bindDocId = ''; editForm.value.bindDocName = '' }
 const detailFields = computed(() => !panelBook.value || modalMode.value !== 'detail' ? [] : buildDetailFields(panelBook.value, groups.value))
 

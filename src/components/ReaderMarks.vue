@@ -61,10 +61,10 @@
           >
             <template #actions>
               <div class="sr-head-actions">
-                <button class="b3-tooltips b3-tooltips__nw" :aria-label="props.i18n?.copy || '复制'" @click.stop="copyMark(row.mark)"><svg><use xlink:href="#iconCopy" /></svg></button>
-                <button v-if="row.mark.blockId && row.mark.type !== 'bookmark'" class="b3-tooltips b3-tooltips__nw" aria-label="打开块" @click.stop="openBlock(row.mark.blockId)" @mouseenter="onBlockEnter($event, row.mark.blockId)" @mouseleave="hideFloat"><svg><use xlink:href="#iconRef" /></svg></button>
-                <button v-else-if="canImport(row.mark)" class="b3-tooltips b3-tooltips__nw" :aria-label="props.i18n?.import || '导入'" @click.stop="importMark(row.mark)"><svg><use xlink:href="#iconDownload" /></svg></button>
-                <button v-if="canDelete(row.mark)" class="b3-tooltips b3-tooltips__nw" :aria-label="props.i18n?.delete || '删除'" @click.stop="deleteMark(row.mark)"><svg><use xlink:href="#iconTrashcan" /></svg></button>
+                <button class="b3-tooltips b3-tooltips__nw" :aria-label="props.i18n?.copy || '복사'" @click.stop="copyMark(row.mark)"><svg><use xlink:href="#iconCopy" /></svg></button>
+                <button v-if="row.mark.blockId && row.mark.type !== 'bookmark'" class="b3-tooltips b3-tooltips__nw" aria-label="블록 열기" @click.stop="openBlock(row.mark.blockId)" @mouseenter="onBlockEnter($event, row.mark.blockId)" @mouseleave="hideFloat"><svg><use xlink:href="#iconRef" /></svg></button>
+                <button v-else-if="canImport(row.mark)" class="b3-tooltips b3-tooltips__nw" :aria-label="props.i18n?.import || '가져오기'" @click.stop="importMark(row.mark)"><svg><use xlink:href="#iconDownload" /></svg></button>
+                <button v-if="canDelete(row.mark)" class="b3-tooltips b3-tooltips__nw" :aria-label="props.i18n?.delete || '삭제'" @click.stop="deleteMark(row.mark)"><svg><use xlink:href="#iconTrashcan" /></svg></button>
               </div>
             </template>
             <template #extra>
@@ -73,26 +73,26 @@
           </MarkCard>
         </div>
       </template>
-      <button v-if="visibleMarkRows.hasMore" class="sr-more" type="button" @click="loadMoreMarks">加载更多</button>
+      <button v-if="visibleMarkRows.hasMore" class="sr-more" type="button" @click="loadMoreMarks">더 불러오기</button>
     </div>
 
     <template #overlay>
       <Transition name="fade">
         <div v-if="showOrganize" class="sr-manage-panel" @click.stop>
           <header class="sr-modal__head">
-            <span>筛选标注</span>
-            <span class="block__icon block__icon--show sr-icon-btn" aria-label="关闭" @click="showOrganize = false"><svg><use xlink:href="#lucide-x" /></svg></span>
+            <span>주석 필터</span>
+            <span class="block__icon block__icon--show sr-icon-btn" aria-label="닫기" @click="showOrganize = false"><svg><use xlink:href="#lucide-x" /></svg></span>
           </header>
           <div class="sr-modal__body">
             <label class="sr-form-item">
-              <span class="ft__secondary">排序</span>
+              <span class="ft__secondary">정렬</span>
               <div class="sr-chips">
                 <button v-for="opt in MARK_SORT_OPTIONS" :key="opt.value" class="sr-chip" :class="{ 'is-active': markFilter.sort === opt.value }" type="button" @click="markFilter.sort = opt.value">
                   {{ opt.label }}
                 </button>
               </div>
               <div class="sr-chips">
-                <button class="sr-chip" :class="{ 'is-active': markReverse }" type="button" @click="markReverse = !markReverse">反向排序</button>
+                <button class="sr-chip" :class="{ 'is-active': markReverse }" type="button" @click="markReverse = !markReverse">역순 정렬</button>
               </div>
             </label>
 
@@ -113,8 +113,8 @@
             </label>
 
             <div class="sr-row sr-actions-end sr-section-line">
-              <button class="b3-button b3-button--outline" type="button" @click="resetMarkOrganize">重置筛选</button>
-              <button class="b3-button b3-button--outline" type="button" @click="showOrganize = false">完成</button>
+              <button class="b3-button b3-button--outline" type="button" @click="resetMarkOrganize">필터 초기화</button>
+              <button class="b3-button b3-button--outline" type="button" @click="showOrganize = false">완료</button>
             </div>
           </div>
         </div>
@@ -212,7 +212,7 @@ const handleMarkListScroll = (event: Event) => {
 }
 watch(list, () => { markRenderLimit.value = MARK_RENDER_STEP })
 const formatDateTime = (ts: number) => new Date(ts).toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
-const getMarkChapter = (mark: any) => isEditing(mark) ? '' : [mark?.chapter || (mark?.page ? `第${mark.page}页` : '')].filter(Boolean).join(' ')
+const getMarkChapter = (mark: any) => isEditing(mark) ? '' : [mark?.chapter || (mark?.page ? `제${mark.page}페이지` : '')].filter(Boolean).join(' ')
 const getMarkStyleOptions = (mark: any) => (mark?.type === 'highlight' || mark?.type === 'note' || !mark?.type) ? getEditStyleOptions() : []
 </script>
 

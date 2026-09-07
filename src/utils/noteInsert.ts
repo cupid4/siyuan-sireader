@@ -13,11 +13,11 @@ type ProtyleLike = {
 
 // ===== 常量与工具 =====
 const ATTR = 'custom-sireader-note-key'
-const DEFAULT_NOTEBOOK_NAME = '思阅笔记'
+const DEFAULT_NOTEBOOK_NAME = 'SiReader 메모'
 const isWindowReader = () => /\/window\.html$/i.test(location.pathname)
 const pickId = (value: any) => typeof value === 'string' ? value : value?.id || ''
 const escapeSql = (value = '') => String(value).replace(/'/g, "''")
-const sanitize = (title: string, fallback = '读书') => `${(title || fallback).replace(/[\\/:*?"<>|]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 80) || fallback}笔记`
+const sanitize = (title: string, fallback = '독서') => `${(title || fallback).replace(/[\\/:*?"<>|]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 80) || fallback} 메모`
 const getSelectionRange = () => window.getSelection()?.rangeCount ? window.getSelection()!.getRangeAt(0) : null
 const getNotebookId = (settings: ReaderSettings) => pickId(settings.notebookId) || pickId(settings.parentDoc?.notebook)
 const getBroadcastUrl = (channel: string) => `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws/broadcast?channel=${encodeURIComponent(channel)}`
@@ -115,7 +115,7 @@ const writeBlock = (mode: InsertMode, content: string, blockId: string, docId: s
   insertBlock: () => api.insertBlock('markdown', content, undefined, blockId),
 }[mode] || (() => api.insertBlock('markdown', content, undefined, blockId)))()
 export const insertToDoc = async (text: string, docId: string, mode: InsertMode = 'appendDoc') => {
-  if (!docId) throw new Error('未找到目标文档')
+  if (!docId) throw new Error('대상 문서를 찾을 수 없습니다')
   await ({ prependDoc: () => api.prependBlock('markdown', text, docId), appendDoc: () => api.appendBlock('markdown', text, docId) }[mode] || (() => api.appendBlock('markdown', text, docId)))()
 }
 
@@ -123,12 +123,12 @@ export const insertToDoc = async (text: string, docId: string, mode: InsertMode 
 const requestCurrentInsert = (text: string, settings: ReaderSettings) => {
   const requestId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
   return new Promise<void>((resolve, reject) => {
-    const timer = setTimeout(() => { off(); reject(new Error('未找到当前编辑器')) }, 1200)
+    const timer = setTimeout(() => { off(); reject(new Error('현재 에디터를 찾을 수 없습니다')) }, 1200)
     const off = broadcast.on(payload => {
       if (payload.type !== 'document-insert-ack' || payload.requestId !== requestId) return
       clearTimeout(timer)
       off()
-      payload.ok ? resolve() : reject(new Error(payload.message || '插入失败'))
+      payload.ok ? resolve() : reject(new Error(payload.message || '삽입 실패'))
     })
     void broadcast.post({ type: 'document-insert', requestId, text, settings })
   })
@@ -137,7 +137,7 @@ const insertCurrent = async (text: string, settings: ReaderSettings) => {
   if (settings.noteInsertMode === 'insertBlock' && insertAtCursor(text)) return
   const blockId = getCurrentBlockId()
   const docId = await getCurrentDocId(blockId)
-  if (!docId) throw new Error('未找到当前文档')
+  if (!docId) throw new Error('현재 문서를 찾을 수 없습니다')
   if (!blockId) return settings.noteInsertMode === 'prependDoc' ? api.prependBlock('markdown', text, docId) : api.appendBlock('markdown', text, docId)
   await writeBlock(settings.noteInsertMode, text, blockId, docId)
 }
@@ -149,7 +149,7 @@ const ensureNotebookId = async (settings: ReaderSettings) => {
   const notebooks = (await api.lsNotebooks().catch(() => null))?.notebooks
   if (notebook && (!Array.isArray(notebooks) || notebooks.some((item: any) => item?.id === notebook))) return notebook
   const next = pickId(Array.isArray(notebooks) && notebooks.find((item: any) => item?.name === DEFAULT_NOTEBOOK_NAME)) || pickId(await api.createNotebook(DEFAULT_NOTEBOOK_NAME).catch(() => null))
-  if (!next) throw new Error('创建思阅笔记本失败')
+  if (!next) throw new Error('SiReader 노트북 생성 실패')
   settings.notebookId = next
   const current = (window as any).__sireader_settings
   if (current && current !== settings) current.notebookId = next
@@ -164,7 +164,7 @@ const getCreateDocPath = async (parentID?: string, notebook?: string) => {
 }
 const appendToNoteDoc = async (title: string, settings: ReaderSettings, text: string, key: string, parentID?: string) => {
   const notebook = parentID ? getNotebookId(settings) : await ensureNotebookId(settings)
-  if (!notebook) throw new Error('未设置目标笔记本')
+  if (!notebook) throw new Error('대상 노트북이 설정되지 않았습니다')
   const id = await getDocIdByAttr(key)
   if (id) {
     if (key.startsWith('book:')) {
@@ -179,7 +179,7 @@ const appendToNoteDoc = async (title: string, settings: ReaderSettings, text: st
   }
   const { path } = await getCreateDocPath(parentID, notebook)
   const created = String((await api.createDoc(notebook, path, sanitize(title), ''))?.id || '')
-  if (!created) throw new Error('创建笔记文档失败')
+  if (!created) throw new Error('메모 문서 생성 실패')
   await api.setBlockAttrs(created, { [ATTR]: key })
   if (key.startsWith('book:')) {
     const bookUrl = key.slice(5)
@@ -193,17 +193,17 @@ const appendToNoteDoc = async (title: string, settings: ReaderSettings, text: st
 }
 const insertDailyNote = async (settings: ReaderSettings, text: string) => {
   const notebook = getNotebookId(settings)
-  if (!notebook) throw new Error('未设置目标笔记本')
+  if (!notebook) throw new Error('대상 노트북이 설정되지 않았습니다')
   const res = await fetchSyncPost('/api/filetree/createDailyNote', { notebook })
   const id = res?.data?.id || res?.data
-  if (!id) throw new Error('创建 Daily Note 失败')
+  if (!id) throw new Error('데일리 노트 생성 실패')
   await api.appendBlock('markdown', text, id)
 }
 
 // ===== 统一插入入口 =====
 export const insertNote = async (text: string, settings: ReaderSettings, title = '读书', key = title) => {
   const target = settings.noteInsertTarget || 'clipboard'
-  if (target === 'clipboard') return navigator.clipboard.writeText(text).then(() => showMessage('已复制到剪贴板', 1500, 'info'))
+  if (target === 'clipboard') return navigator.clipboard.writeText(text).then(() => showMessage('클립보드에 복사되었습니다', 1500, 'info'))
   if (target === 'current' && isWindowReader()) return requestCurrentInsert(text, settings)
   const result = await ({
     current: () => insertCurrent(text, settings),
@@ -211,7 +211,7 @@ export const insertNote = async (text: string, settings: ReaderSettings, title =
     document: () => appendToNoteDoc(title, settings, text, `book:${key}`, pickId(settings.parentDoc)),
     dailynote: () => insertDailyNote(settings, text),
   }[target] || (() => navigator.clipboard.writeText(text)))()
-  showMessage('已插入笔记', 1500, 'info')
+  showMessage('메모가 삽입되었습니다', 1500, 'info')
   return result
 }
 
@@ -219,6 +219,6 @@ export const insertNote = async (text: string, settings: ReaderSettings, title =
 broadcast.on(async payload => {
   if (isWindowReader() || payload.type !== 'document-insert' || !payload.requestId) return
   try { await insertCurrent(payload.text || '', payload.settings || {}) }
-  catch (error: any) { return void await broadcast.post({ type: 'document-insert-ack', requestId: payload.requestId, ok: false, message: error?.message || '插入失败' }) }
+  catch (error: any) { return void await broadcast.post({ type: 'document-insert-ack', requestId: payload.requestId, ok: false, message: error?.message || '삽입 실패' }) }
   await broadcast.post({ type: 'document-insert-ack', requestId: payload.requestId, ok: true })
 })

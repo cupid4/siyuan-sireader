@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="plugin-app-main">
     <Stats :visible="showStats" @close="showStats=false" @open="handleOpenBook" />
     <TTSMini />
@@ -18,7 +18,7 @@ import { useReaderState } from '@/core/epub/state'
 import { listPageScripts, registerPageScript, setPageScriptEnabled, unregisterPageScript } from '@/core/pageScripts'
 import DockShell from '@/components/ui/DockShell.vue'
 import BookSearch from '@/components/BookSearch.vue'
-import BookShelf from '@/components/BookShelf.vue'
+import BookShelf from '@/components/Bookshelf.vue'
 import OnlineReader from '@/components/OnlineReader.vue'
 import ReaderToc from '@/components/ReaderToc.vue'
 import ReaderMarks from '@/components/ReaderMarks.vue'
@@ -48,7 +48,7 @@ const SettingsDock = defineComponent({
     const activeTab = ref('bookshelf')
     const model = ref(props.modelValue)
     const navItems = computed(() => (model.value.navItems?.length ? model.value.navItems : DEFAULT_NAV_ITEMS).filter((item: any) => !['dictionary', 'weread'].includes(item.id)).sort((a: any, b: any) => a.order - b.order))
-    const tabs = computed(() => navItems.value.filter((item: any) => item.enabled && (item.id !== 'toc' || canShowToc.value)).map((item: any) => ({ id: item.id, icon: item.icon, tip: props.i18n?.[item.tip] || item.tip })))
+    const tabs = computed(() => navItems.value.filter((item: any) => item.enabled && (item.id !== 'toc' || canShowToc.value)).map((item: any) => ({ id: item.id, icon: item.icon, tip: props.i18n?.[item.tip] || ({'目录':'목차','标注':'주석','设置':'설정','书架':'서재','bookshelf':'서재','search':'검색','toc':'목차','mark':'주석','appearance':'설정'}[item.tip]) || item.tip })))
     const tooltipDir = computed(() => ({ left: 'e', right: 'w', top: 's', bottom: 'n' }[model.value.navPosition] || 'n'))
     const handleUpdate = (value: any) => {
       model.value = value
@@ -166,7 +166,7 @@ plugin.addTab({
   type: 'epub_reader',
   async init() {
     const { url, blockId, file } = this.data
-    if (!file && !url) return this.element.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--b3-theme-error)">加载失败</div>'
+    if (!file && !url) return this.element.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--b3-theme-error)">불러오기 실패</div>'
     ;(this as any)._app = await mountReader(this.element, { file, url, blockId })
   },
   resize() { ;(this as any)._app?.resize?.() },
@@ -177,7 +177,7 @@ plugin.addTab({
   type: 'custom_tab_book_reader',
   async init() {
     const { bookInfo } = this.data
-    if (!bookInfo) return this.element.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--b3-theme-error)">加载失败</div>'
+    if (!bookInfo) return this.element.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--b3-theme-error)">불러오기 실패</div>'
     ;(this as any)._app = await mountReader(this.element, { bookInfo })
   },
   resize() { ;(this as any)._app?.resize?.() },
@@ -188,11 +188,11 @@ plugin.addTab({
   type: 'online_reader',
   init() {
     const { url, bookInfo, context } = this.data
-    if (!url) return this.element.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--b3-theme-error)">加载失败</div>'
+    if (!url) return this.element.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--b3-theme-error)">불러오기 실패</div>'
     this.element.innerHTML = ''
     ;(this as any)._app = createApp(OnlineReader as Component, {
       url,
-      title: bookInfo?.title || '在线阅读',
+      title: bookInfo?.title || '온라인 읽기',
       context,
       mountReader,
     })
@@ -217,12 +217,12 @@ const handleEbookLink = async (e: MouseEvent) => {
   const parsed = parseBookLink(url)
   if (parsed) {
     e.preventDefault(), e.stopPropagation()
-    if (!parsed.bookUrl) return showMessage('无效的书籍链接', 3000, 'error')
+    if (!parsed.bookUrl) return showMessage('유효하지 않은 도서 링크', 3000, 'error')
     if (await openWereadReaderLink(plugin, settings.value, parsed.bookUrl, parsed.cfi, parsed.id)) return
     const { bookshelfManager } = await import('@/core/bookshelf')
     const { openOrActivateBook } = await import('@/utils/bookOpen')
     const book = await bookshelfManager.getBook(parsed.bookUrl)
-    if (!book) return showMessage('书籍不存在', 3000, 'error')
+    if (!book) return showMessage('도서가 존재하지 않습니다', 3000, 'error')
     return openOrActivateBook(plugin, book, settings.value, () =>
       window.dispatchEvent(new CustomEvent('sireader:goto', { detail: { cfi: parsed.cfi, id: parsed.id, bookUrl: book.url } }))
     )
@@ -242,7 +242,7 @@ const handleEbookLink = async (e: MouseEvent) => {
     if (!settings.value.openDocAssets) return // 设置关闭时不处理
     e.preventDefault(), e.stopPropagation()
     const file = await fetchFile(cleanUrl)
-    if (!file) return showMessage('文件不存在', 3000, 'error')
+    if (!file) return showMessage('파일이 존재하지 않습니다', 3000, 'error')
     const { openReaderTab, getOrAddAssetBook, openOrActivateBook } = await import('@/utils/bookOpen')
     if (!shouldAddDocAssetToShelf(url, settings.value.docAssetExcludeRegex)) {
       const title = file.name.replace(/\.[^.]+$/, '') || 'Reader'
@@ -250,7 +250,7 @@ const handleEbookLink = async (e: MouseEvent) => {
     }
     const { bookshelfManager } = await import('@/core/bookshelf')
     const book = await getOrAddAssetBook(bookshelfManager, url, file)
-    if (!book) return showMessage('添加失败', 3000, 'error')
+    if (!book) return showMessage('추가 실패', 3000, 'error')
     return openOrActivateBook(plugin, book, settings.value)
   }
   
@@ -294,7 +294,7 @@ setOpenSettingHandler(openSetting)
 const iconId = READER_ICON_ID
 plugin.addDock({
   type: DOCK_TYPE,
-  config: { position: 'RightTop', size: { width: 680, height: 580 }, icon: iconId, title: plugin.i18n?.name || '思阅' },
+  config: { position: 'RightTop', size: { width: 680, height: 580 }, icon: iconId, title: plugin.i18n?.name || 'SiReader' },
   data: { plugin },
   async init() {
     const container = document.createElement('div')
@@ -302,7 +302,7 @@ plugin.addDock({
     container.style.cssText = 'width:100%;height:100%;overflow:hidden'
     this.element.appendChild(container)
     if (!isLoaded.value) {
-      container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--b3-theme-on-surface)">加载中...</div>'
+      container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--b3-theme-on-surface)">불러오는 중...</div>'
       await waitForSettings()
       container.innerHTML = ''
     }
@@ -318,7 +318,7 @@ plugin.addDock({
   destroy() { settingsApp?.unmount(); settingsApp = null }
 })
 
-plugin.addTopBar({ icon: `<svg><use xlink:href="#${iconId}"/></svg>`, title: '思阅', callback: openSetting })
+plugin.addTopBar({ icon: `<svg><use xlink:href="#${iconId}"/></svg>`, title: plugin.i18n?.name || 'SiReader', callback: openSetting })
 
 // 启用底部右下角的阅读统计功能
 const statsInstance = useStats(plugin)
@@ -331,14 +331,14 @@ const ttsBar = document.createElement('div')
 ttsBar.className = 'toolbar__item b3-tooltips b3-tooltips__n'
 ttsBar.id = 'tts-btn'
 ttsBar.innerHTML = '<svg class="toolbar__icon"><use xlink:href="#lucide-volume-2"></use></svg>'
-ttsBar.setAttribute('aria-label', '朗读播放')
+ttsBar.setAttribute('aria-label', '음성 낭독')
 ttsBar.style.cssText = 'cursor:pointer;display:none'
 ttsBar.addEventListener('click', () => window.dispatchEvent(new CustomEvent('tts:toggle-mini')))
 plugin.addStatusBar({ element: ttsBar, position: 'right' })
 watch([ttsController.isActive, ttsController.paused], ([active, paused]) => {
   ttsBar.style.display = active ? '' : 'none'
   ttsBar.classList.toggle('toolbar__item--active', !!active && !paused)
-  ttsBar.setAttribute('aria-label', active ? (paused ? '继续朗读' : '朗读中') : '朗读播放')
+  ttsBar.setAttribute('aria-label', active ? (paused ? '낭독 계속' : '낭독 중') : '음성 낭독')
 }, { immediate: true })
 
 // 处理统计面板切换
@@ -346,16 +346,16 @@ const handleStatsToggle = () => showStats.value = !showStats.value
 const handleOpenWeread = () => openWereadTab()
 const handleOpenOnlineReader = async (e: CustomEvent) => {
   const { title, url, context } = e.detail || {}
-  if (!url) return showMessage('在线阅读地址为空', 2000, 'error')
+  if (!url) return showMessage('온라인 읽기 주소가 비어 있습니다', 2000, 'error')
   const { openOnlineReaderTab } = await import('@/utils/bookOpen')
-  openOnlineReaderTab(plugin, title || '在线阅读', url, settings.value, undefined, context)
+  openOnlineReaderTab(plugin, title || '온라인 읽기', url, settings.value, undefined, context)
 }
 const handleOpenBook = async (book: any) => {
   showStats.value = false
   const { openOrActivateBook } = await import('@/utils/bookOpen')
   const { bookshelfManager } = await import('@/core/bookshelf')
   const full = await bookshelfManager.getBook(book.url)
-  if (!full) return showMessage('加载失败', 3000, 'error')
+  if (!full) return showMessage('불러오기 실패', 3000, 'error')
   openOrActivateBook(plugin, full, settings.value)
 }
 

@@ -123,7 +123,7 @@ ${paragraphs}
 export const generateEpubFile = async (
   content: ArrayBuffer | string,
   title = '未命名',
-  author = '未知作者'
+  author = '작자 미상'
 ): Promise<File> => {
   // 解码
   const text = content instanceof ArrayBuffer ? decodeTxtBuffer(content) : content
@@ -232,5 +232,5 @@ ${navList}
 // 转换TXT文件为EPUB
 export const convertTxtFile = async (file: File): Promise<File> => {
   const name = file.name.replace(/\.txt$/i, '')
-  return generateEpubFile(await file.arrayBuffer(), name, '未知作者')
+  return generateEpubFile(await file.arrayBuffer(), name, '작자 미상')
 }

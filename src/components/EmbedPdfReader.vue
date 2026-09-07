@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div v-if="props.source && !pdfLoadError" ref="rootRef" class="embed-pdf-reader">
     <div ref="viewerHostRef" class="embed-pdf-reader__host"></div>
     <div v-if="pdfPreparing" class="embed-pdf-reader__loading embed-pdf-reader__loading--overlay">{{ pdfPreparing }}</div>
@@ -140,7 +140,7 @@ const showPdfTooltip = (item: any, x: number, y: number) => {
     currentPdfTooltipId = item.annotation.id
     const text = pdfAnnotationText(item)
     const quote = text ? `<div style="padding:8px 14px;background:var(--b3-theme-background-light);border-bottom:1px solid var(--b3-border-color);font-size:12px;color:var(--b3-theme-on-surface-variant);font-style:italic;line-height:1.5">${escapeHtml(text)}</div>` : ''
-    tip.innerHTML = createTooltip({ icon: '#iconEdit', iconColor: 'var(--b3-theme-primary)', title: props.i18n?.note || '笔记', content: `${quote}<div style="padding:14px;font-size:13px;line-height:1.7;max-height:300px;overflow-y:auto;word-break:break-word;white-space:pre-wrap">${escapeHtml(note)}</div>` })
+    tip.innerHTML = createTooltip({ icon: '#iconEdit', iconColor: 'var(--b3-theme-primary)', title: props.i18n?.note || '메모', content: `${quote}<div style="padding:14px;font-size:13px;line-height:1.7;max-height:300px;overflow-y:auto;word-break:break-word;white-space:pre-wrap">${escapeHtml(note)}</div>` })
   }
   showTooltip(tip, x + 12, y + 12)
 }
@@ -235,16 +235,16 @@ const queueCaptureCopyButton = () => {
   const add = () => {
     if (shadow.querySelector('[data-sireader-copy-capture]')) return true
     const buttons = Array.from(shadow.querySelectorAll('button')) as HTMLButtonElement[]
-    const download = buttons.find(button => /download|下载/i.test(button.textContent || ''))
+    const download = buttons.find(button => /download|다운로드|下载/i.test(button.textContent || ''))
     const footer = download?.parentElement
     if (!download || !footer) return false
     const copy = download.cloneNode(true) as HTMLButtonElement
     copy.dataset.sireaderCopyCapture = 'true'
-    copy.textContent = props.i18n?.copy || '复制'
+    copy.textContent = props.i18n?.copy || '복사'
     copy.onclick = event => {
       event.preventDefault()
       event.stopPropagation()
-      lastCaptureBlob && void copyCaptureBlob(lastCaptureBlob).catch((error: any) => showMessage(error?.message || '复制失败', 2000, 'error'))
+      lastCaptureBlob && void copyCaptureBlob(lastCaptureBlob).catch((error: any) => showMessage(error?.message || '복사 실패', 2000, 'error'))
     }
     footer.insertBefore(copy, download)
     return true
@@ -258,7 +258,7 @@ const setupPdfBottomButtons = (registry: PluginRegistry) => {
   const shadow = pdfShadowRoot()
   if (!shadow) return
   let toolbarHidden = false
-  const labelToolbar = () => toolbarHidden ? '显示顶部工具栏' : '隐藏顶部工具栏'
+  const labelToolbar = () => toolbarHidden ? '상단 툴바 표시' : '상단 툴바 숨기기'
   const paint = (button: HTMLButtonElement, label: string, icon: string) => {
     button.title = button.ariaLabel = label
     button.innerHTML = icon
@@ -286,9 +286,9 @@ const setupPdfBottomButtons = (registry: PluginRegistry) => {
       paint(button, labelToolbar(), toolbarHidden ? PDF_BOTTOM_ICONS.show : PDF_BOTTOM_ICONS.hide)
     }
     return (
-      mk('sireader-pdf-toc', props.i18n?.toc || '目录', PDF_BOTTOM_ICONS.toc, () => window.dispatchEvent(new Event('sireader:togglePdfToc'))) &&
+      mk('sireader-pdf-toc', props.i18n?.toc || '목차', PDF_BOTTOM_ICONS.toc, () => window.dispatchEvent(new Event('sireader:togglePdfToc'))) &&
       mk('sireader-pdf-toolbar', labelToolbar(), PDF_BOTTOM_ICONS.hide, toggleToolbar) &&
-      (!isMobile() || mk('sireader-pdf-close', '关闭', PDF_BOTTOM_ICONS.close, () => window.dispatchEvent(new CustomEvent('reader:mobile-close'))))
+      (!isMobile() || mk('sireader-pdf-close', '닫기', PDF_BOTTOM_ICONS.close, () => window.dispatchEvent(new CustomEvent('reader:mobile-close'))))
     )
   }
   if (add()) return
@@ -351,14 +351,14 @@ const setupPdfDoubleTapZoom = (registry: PluginRegistry) => {
 }
 const copyCaptureBlob = async (blob: Blob) => {
   await writeBlobToClipboard(blob)
-  showMessage(props.i18n?.copied || '已复制', 1200)
+  showMessage(props.i18n?.copied || '복사됨', 1200)
 }
 const openPdfTranslate = (text: string) => {
   text = text.trim()
-  if (!text) return showMessage(props.i18n?.noContent || '无内容', 1200)
+  if (!text) return showMessage(props.i18n?.noContent || '내용 없음', 1200)
   let app: any
   const dialog = new Dialog({
-    title: props.i18n?.translate || '翻译',
+    title: props.i18n?.translate || '번역',
     content: '<div class="b3-dialog__content sireader-pdf-translate" style="height:100%;overflow:auto;padding:16px"></div>',
     width: '520px',
     height: '520px',
@@ -381,7 +381,7 @@ const setupPdfCommands = (registry: PluginRegistry) => {
   }
   commands?.registerCommand?.({
     id: 'sireader:copy-annotation-link',
-    label: '复制回链',
+    label: '백링크 복사',
     icon: 'copy',
     categories: ['annotation', 'sireader-copy-link'],
     action: async () => {
@@ -394,7 +394,7 @@ const setupPdfCommands = (registry: PluginRegistry) => {
   })
   commands?.registerCommand?.({
     id: 'sireader:dict-annotation',
-    label: props.i18n?.dict || '词典',
+    label: props.i18n?.dict || '사전',
     icon: 'book',
     categories: ['annotation', 'sireader'],
     action: async () => {
@@ -408,7 +408,7 @@ const setupPdfCommands = (registry: PluginRegistry) => {
   })
   commands?.registerCommand?.({
     id: 'sireader:translate-annotation',
-    label: props.i18n?.translate || '翻译',
+    label: props.i18n?.translate || '번역',
     icon: 'text',
     categories: ['annotation', 'sireader'],
     action: () => openPdfTranslate(selectedPdfText()),
@@ -417,24 +417,24 @@ const setupPdfCommands = (registry: PluginRegistry) => {
   })
   commands?.registerCommand?.({
     id: 'sireader:send-selection-menu',
-    label: props.i18n?.sendTo || 'Send to',
+    label: props.i18n?.sendTo || '보내기',
     icon: 'fileImport',
     categories: ['selection', 'sireader-send'],
     action: () => openSendMenu('selection'),
   })
   commands?.registerCommand?.({
     id: 'sireader:create-hole',
-    label: '挖空',
+    label: '빈칸 만들기',
     icon: 'square',
     action: () => void createPdfHoleFromSelection(registry),
   })
   ;[
-    ['dict', props.i18n?.dict || '词典', 'book', async (mark: any) => (await import('@/utils/dictionary')).openDict(mark.text, innerWidth / 2, innerHeight / 2, mark)],
-    ['translate', props.i18n?.translate || '翻译', 'text', (mark: any) => openPdfTranslate(mark.text)],
+    ['dict', props.i18n?.dict || '사전', 'book', async (mark: any) => (await import('@/utils/dictionary')).openDict(mark.text, innerWidth / 2, innerHeight / 2, mark)],
+    ['translate', props.i18n?.translate || '번역', 'text', (mark: any) => openPdfTranslate(mark.text)],
   ].forEach(([id, label, icon, run]: any) => commands?.registerCommand?.({ id: `sireader:${id}-selection`, label, icon, action: async () => { const mark = await selectedMark(); if (mark?.text) run(mark) } }))
   docs.forEach((doc: any, index: number) => commands?.registerCommand?.({
     id: `sireader:send-selection:${index}`,
-    label: doc.name || props.i18n?.sendTo || 'Send to',
+    label: doc.name || props.i18n?.sendTo || '보내기',
     icon: 'fileImport',
     categories: ['selection', 'sireader-send'],
     action: async () => {
@@ -446,14 +446,14 @@ const setupPdfCommands = (registry: PluginRegistry) => {
   }))
   commands?.registerCommand?.({
     id: 'sireader:send-annotation-menu',
-    label: props.i18n?.sendTo || 'Send to',
+    label: props.i18n?.sendTo || '보내기',
     icon: 'fileImport',
     categories: ['annotation', 'sireader-send'],
     action: () => openSendMenu('annotation'),
   })
   docs.forEach((doc: any, index: number) => commands?.registerCommand?.({
     id: `sireader:send-annotation:${index}`,
-    label: doc.name || props.i18n?.sendTo || 'Send to',
+    label: doc.name || props.i18n?.sendTo || '보내기',
     icon: 'fileImport',
     categories: ['annotation', 'sireader-send'],
     action: async () => {
@@ -467,14 +467,14 @@ const setupPdfCommands = (registry: PluginRegistry) => {
   }))
   commands?.registerCommand?.({
     id: 'sireader:capture-copy',
-    label: props.i18n?.copy || '复制截图',
+    label: props.i18n?.copy || '스크린샷 복사',
     icon: 'copy',
     categories: ['document', 'document-capture', 'sireader-capture-copy'],
     action: () => {
       copyNextCapture = true
       window.dispatchEvent(new Event('sireader:close-reader-panels'))
       capture?.toggleMarqueeCapture?.()
-      showMessage(props.i18n?.capture || '拖选截图区域', 1500)
+      showMessage(props.i18n?.capture || '스크린샷 영역 드래그', 1500)
     },
   })
   const schema = ui?.getSchema?.()
@@ -532,7 +532,7 @@ const setupPdfCapture = (registry: PluginRegistry) => {
     queueCaptureCopyButton()
     if (!copyNextCapture) return
     copyNextCapture = false
-    void copyCaptureBlob(blob).catch((error: any) => showMessage(error?.message || '复制失败', 2000, 'error'))
+    void copyCaptureBlob(blob).catch((error: any) => showMessage(error?.message || '복사 실패', 2000, 'error'))
   })
   const offState = capture?.onStateChange?.((state: any) => {
     if (state?.isMarqueeCaptureActive) window.dispatchEvent(new Event('sireader:close-reader-panels'))
@@ -571,7 +571,7 @@ const setupPdfMigration = () => {
     const detail = (event as CustomEvent).detail || {}
     if (detail.url && detail.url !== storageKey()) return
     if (detail.phase !== 'progress' && detail.phase !== 'done') return
-    showMessage(detail.phase === 'done' ? '标注迁移完成' : `正在迁移标注 ${detail.done || 0}/${detail.total || 0}`, 1200)
+    showMessage(detail.phase === 'done' ? '주석 이전 완료' : `주석 이전 중 ${detail.done || 0}/${detail.total || 0}`, 1200)
   }
   window.addEventListener('sireader:pdf-migration', onMigration as EventListener)
   cleanupMigrationEvents = () => window.removeEventListener('sireader:pdf-migration', onMigration as EventListener)
@@ -632,6 +632,9 @@ const handleInit = (container: EmbedPdfContainer) => {
 
 const handleReady = async (registry: PluginRegistry) => {
   activeRegistry = registry
+  try {
+    getCapability<any>(registry, 'i18n')?.setLocale?.('ko')
+  } catch {}
   nativePdfAnnotationIds = new Set()
   emit('ready', registry)
   setupPdfMigration()
@@ -798,8 +801,8 @@ const config = computed(() => ({
   zoom: { defaultZoomLevel: pdfInitialZoomLevel() ?? 'fit-width' },
   redaction: { useAnnotationMode: true, drawBlackBoxes: true },
   i18n: {
-    defaultLocale: 'zh-CN',
-    fallbackLocale: 'en',
+    defaultLocale: 'ko',
+    fallbackLocale: 'ko',
   },
   theme: pdfTheme(),
 }))

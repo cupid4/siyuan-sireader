@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div v-if="mode === 'compact'" class="fn__flex-1 fn__flex-column file-tree sy__file bs-view bs-tree-view" :class="{ 'bs-tree-view--dense': dense }" @dragover="handleRootDragOver" @drop="handleRootDrop">
     <div class="fn__flex-1 fn__hidescrollbar" @mouseover="onCompactHover">
       <ul v-for="root in compactTree" :key="root.key" class="b3-list b3-list--background">
@@ -96,7 +96,7 @@
             <span v-for="text in groupChips(item.data)" :key="text" class="bs-tag bs-tag--type">{{ text }}</span>
           </div>
           <span class="bs-badge bs-badge--bottom">{{ countText(groupCount(item.data)) }}</span>
-          <span class="bs-watermark bs-watermark--group">分组</span>
+          <span class="bs-watermark bs-watermark--group">그룹</span>
         </template>
       </div>
       <div class="bs-title ariaLabel" :aria-label="mainText(item)">{{ mainText(item) }}</div>
@@ -186,7 +186,7 @@ type ImportItem = { type: 'import'; data: BookImportItem }
 type Item = GroupItem | BookItem | ImportItem
 type CompactRow = { key: string; item: Item; level: number; kind: 'group' | 'book' | 'import' }
 type CompactNode = CompactRow & { children: CompactRow[] }
-const HOME_DROP_LABEL = '移出分组'
+const HOME_DROP_LABEL = '그룹에서 제외'
 
 const props = withDefaults(defineProps<{
   items: Item[]
@@ -387,7 +387,7 @@ const handleContextMenu = (item: Item, event: MouseEvent) => {
 
 const handleCompactContextMenu = (row: CompactRow, event: MouseEvent) => handleContextMenu(row.item, event)
 
-const countText = (count: number) => `${count} 本`
+const countText = (count: number) => `${count} 권`
 const compactIndent = (row: CompactRow) => row.level * (props.dense ? 12 : 18)
 const compactItemStyle = (row: CompactRow) => ({ '--file-toggle-width': `${compactIndent(row) + (props.dense ? 14 : 18)}px` })
 const compactToggleStyle = (row: CompactRow) => ({ paddingLeft: `${compactIndent(row)}px` })
@@ -399,9 +399,10 @@ const groupChips = (group: GroupConfig) => [
   ...(group.rules?.tags || []).slice(0, 2),
   ...((group.rules?.format || []).slice(0, 1).map(v => v.toUpperCase())),
   ...((group.rules?.status || []).slice(0, 1).map(v => props.statusMap[v])),
-  ...(group.rules?.rating ? [`${group.rules.rating}星+`] : []),
+  ...(group.rules?.rating ? [`${group.rules.rating}점+`] : []),
 ].slice(0, 3)
-const authorText = (item: Item) => isGroup(item) ? (item.data.type === 'smart' ? '智能分组' : '分组') : isBook(item) ? item.data.author || '未知作者' : item.data.preview?.author || '未知作者'
+const formatAuthor = (a?: string) => (!a || a === '未知作者' || a === 'Unknown' || a === '作/译者未知' || a === '작자 미상') ? '작자 미상' : a
+const authorText = (item: Item) => isGroup(item) ? (item.data.type === 'smart' ? '스마트 그룹' : '그룹') : isBook(item) ? formatAuthor(item.data.author) : formatAuthor(item.data.preview?.author)
 const onCompactHover = (event: MouseEvent) => (event.target as HTMLElement).hasAttribute('data-playlist-item') && event.stopPropagation()
 const compactMeta = (item: Item) => isGroup(item) ? (props.showGroupMeta ? countText(groupCount(item.data)) : '') : isBook(item) ? (hidden('progress') ? '' : props.getProgress(item.data)) : importStateText(item.data)
 const sideTexts = (item: Item) => isGroup(item) ? [countText(groupCount(item.data))] : isBook(item) ? [] : [importStateText(item.data)]
@@ -429,10 +430,10 @@ const placeholderCover = (item: Item) => {
   const art = kind === 'group' ? shapes.group(accent, ink) : kind === 'pdf' ? shapes.pdf(accent, ink) : shapes.book(accent, ink, kind === 'txt' ? 6 : 20, kind === 'txt' ? 2 : 8)
   return `data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 180"><rect width="120" height="180" fill="${bg}"/><circle cx="94" cy="24" r="22" fill="${accent}" fill-opacity=".12"/><rect x="22" y="28" width="74" height="92" rx="16" fill="#fff" fill-opacity=".68"/>${art}<rect x="22" y="138" width="68" height="6" rx="3" fill="${ink}" fill-opacity=".34"/><rect x="22" y="150" width="52" height="6" rx="3" fill="${ink}" fill-opacity=".24"/><rect x="22" y="162" width="60" height="6" rx="3" fill="${ink}" fill-opacity=".18"/></svg>`)}` 
 }
-const importStateText = (item: BookImportItem) => item.error ? '失败' : item.loading ? (item.preview ? '导入中...' : '解析中...') : item.preview?.format?.toUpperCase?.() || '待导入'
-const annotationText = (book: Book) => book.annotationCount ? `标注 ${book.annotationCount}` : ''
-const chapterText = (book: Book) => book.total ? `章节 ${book.chapter || 0}/${book.total}` : book.chapter ? `章节 ${book.chapter}` : ''
-const lastReadText = (ts: number) => ts ? `最近阅读 ${new Date(ts).toLocaleDateString('zh-CN')}` : ''
+const importStateText = (item: BookImportItem) => item.error ? '실패' : item.loading ? (item.preview ? '가져오는 중...' : '분석 중...') : item.preview?.format?.toUpperCase?.() || '가져오기 대기'
+const annotationText = (book: Book) => book.annotationCount ? `주석 ${book.annotationCount}` : ''
+const chapterText = (book: Book) => book.total ? `챕터 ${book.chapter || 0}/${book.total}` : book.chapter ? `챕터 ${book.chapter}` : ''
+const lastReadText = (ts: number) => ts ? `최근 읽음 ${new Date(ts).toLocaleDateString('ko-KR')}` : ''
 const tagStyle = (tag: string) => {
   let hash = 0
   for (let i = 0; i < tag.length; i++) hash = tag.charCodeAt(i) + ((hash << 5) - hash)

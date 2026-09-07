@@ -3,12 +3,12 @@
     <div v-if="visible" ref="popupRef" :class="['popup',{expanded:showDetail}]">
       <!-- 简洁视图 -->
       <template v-if="!showDetail">
-        <div class="popup-title">📊 今日阅读</div>
-        <div class="popup-item">本次: <span>{{fmt(sessionTime)}}</span></div>
-        <div class="popup-item">今日: <span>{{fmt(todayTime)}}</span></div>
-        <div class="popup-item">累计: <span>{{fmt(totalTime)}}</span></div>
+        <div class="popup-title">📊 오늘의 독서</div>
+        <div class="popup-item">이번 세션: <span>{{fmt(sessionTime)}}</span></div>
+        <div class="popup-item">오늘: <span>{{fmt(todayTime)}}</span></div>
+        <div class="popup-item">누적: <span>{{fmt(totalTime)}}</span></div>
         <div class="popup-divider"></div>
-        <button class="popup-btn" @click.stop="handleViewDetail">查看详情 →</button>
+        <button class="popup-btn" @click.stop="handleViewDetail">상세 보기 →</button>
       </template>
 
       <!-- 详细视图 -->
@@ -33,18 +33,18 @@
           <!-- 日历 -->
           <div class="card">
             <div class="head">
-              <div class="title">📆 阅读日历</div>
+              <div class="title">📆 독서 달력</div>
               <div class="cal-ctrl">
                 <button class="cal-btn" @click="navPeriod(-1)">‹</button>
                 <button class="cal-btn view" @click="switchView">
-                  {{calView==='year'?curYear+'年':curYear+'年'+curMonth+'月'}}
+                  {{calView==='year'?curYear+'년 ':curYear+'년 '+curMonth+'월'}}
                 </button>
                 <button class="cal-btn" @click="navPeriod(1)">›</button>
               </div>
             </div>
             <div v-if="calView==='year'" class="calendar">
               <div v-for="m in 12" :key="m" class="month">
-                <div class="month-label">{{m}}月</div>
+                <div class="month-label">{{m}}월</div>
                 <div class="month-grid">
                   <i v-for="d in getDays(m)" :key="d.day" :data-level="d.level" 
                      :title="d.tooltip"></i>
@@ -64,8 +64,8 @@
           <!-- 书籍分布 -->
           <div class="card">
             <div class="head">
-              <div class="title">📚 书籍分布</div>
-              <div class="subtitle">共 {{totalBooks}} 本</div>
+              <div class="title">📚 도서 분포</div>
+              <div class="subtitle">총 {{totalBooks}} 권</div>
             </div>
             <div class="rings">
               <svg viewBox="0 0 200 200">
@@ -83,7 +83,7 @@
 
           <!-- 喜好的书 -->
           <div v-if="topBooks.length" class="card">
-            <div class="title">💖 喜好的书</div>
+            <div class="title">💖 선호 도서</div>
             <div class="books">
               <div v-for="b in topBooks" :key="b.url" class="book" @click="$emit('open',b)">
                 <div class="cover">
@@ -99,7 +99,7 @@
 
           <!-- 评分 -->
           <div v-if="ratings.length" class="card">
-            <div class="title">⭐ 评分分布</div>
+            <div class="title">⭐ 평점 분포</div>
             <div class="bars">
               <div v-for="r in ratings" :key="r.rating" class="bar">
                 <div class="fill" :style="{width:r.percent+'%'}"></div>
@@ -113,7 +113,7 @@
 
           <!-- 格式 -->
           <div v-if="formats.length" class="card">
-            <div class="title">📖 格式分布</div>
+            <div class="title">📖 포맷 분포</div>
             <div class="rings">
               <svg viewBox="0 0 240 240">
                 <g v-for="(r,i) in fmtRings" :key="i">
@@ -181,25 +181,25 @@ const totalTime=computed(()=>{
 // 复用useStats的格式化方法
 const fmt=statsComposable?.fmt||(s=>s+'s')
 const fmtShort=statsComposable?.fmtShort||(s=>s+'s')
-const fmtDecimal=(s:number)=>{const h=s/3600;return h>=24?`${(h/24).toFixed(1)}天`:h>=1?`${h.toFixed(1)}时`:`${(s/60).toFixed(1)}分`}
+const fmtDecimal=(s:number)=>{const h=s/3600;return h>=24?`${(h/24).toFixed(1)}일`:h>=1?`${h.toFixed(1)}시간`:`${(s/60).toFixed(1)}분`}
 
-const getBadge=(b:any)=>b.status==='finished'?'已读完':b.time>3600?'常读常新':b.progress>50?'阅读中':'最近阅读'
+const getBadge=(b:any)=>b.status==='finished'?'완독':b.time>3600?'다시 읽기':b.progress>50?'읽는 중':'최근 읽음'
 const getColor=(t:string)=>bookshelfManager.getBookColor(t)
 const getCover=(b:any)=>bookshelfManager.getCoverUrl(b)
 const formatTime=(s:number)=>{
   const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=s%60
-  return h>0?`${h}小时${m}分${sec}秒`:m>0?`${m}分${sec}秒`:`${sec}秒`
+  return h>0?`${h}시간 ${m}분 ${sec}초`:m>0?`${m}분 ${sec}초`:`${sec}초`
 }
 
 const headers=computed(()=>{
   const totalStr=fmtDecimal(totalTime.value)
   const todayStr=fmtDecimal(todayTime.value)
   return[
-    {label:'积阅',value:totalStr.match(/[\d.]+/)?.[0]||'0',unit:totalStr.replace(/[\d.]+/,'')},
-    {label:'今阅',value:todayStr.match(/[\d.]+/)?.[0]||'0',unit:todayStr.replace(/[\d.]+/,'')},
-    {label:'读完',value:finishedCount.value,unit:'本'},
-    {label:'读过',value:totalBooks.value,unit:'本'},
-    {label:'笔记',value:annotationCount.value,unit:'条'}
+    {label:'누적',value:totalStr.match(/[\d.]+/)?.[0]||'0',unit:totalStr.replace(/[\d.]+/,'')},
+    {label:'오늘',value:todayStr.match(/[\d.]+/)?.[0]||'0',unit:todayStr.replace(/[\d.]+/,'')},
+    {label:'완독',value:finishedCount.value,unit:'권'},
+    {label:'읽음',value:totalBooks.value,unit:'권'},
+    {label:'메모',value:annotationCount.value,unit:'개'}
   ]
 })
 
@@ -236,13 +236,13 @@ const getLevel=(duration:number)=>{
 const formatDayTooltip=(data:any)=>{
   if(!data||!data.total)return''
   const h=Math.floor(data.total/3600),m=Math.floor((data.total%3600)/60)
-  let tip=`总计: ${h>0?h+'小时':''} ${m}分钟`
+  let tip=`총계: ${h>0?h+'시간 ':''}${m}분`
   if(data.books.length>0){
     tip+='\n'+data.books.map((b:any)=>{
       const bh=Math.floor(b.duration/3600),bm=Math.floor((b.duration%3600)/60)
       const book=allBooks.value.find(tb=>tb.url===b.url)
-      const name=book?book.title.slice(0,10):'未知书籍'
-      return `${name}: ${bh>0?bh+'小时':''} ${bm}分钟`
+      const name=book?book.title.slice(0,10):'제목 없는 도서'
+      return `${name}: ${bh>0?bh+'시간 ':''}${bm}분`
     }).join('\n')
   }
   return tip
@@ -263,7 +263,7 @@ const getDays=(m:number)=>{
 
 const switchView=()=>calView.value=calView.value==='year'?'month':'year'
 
-const handleViewDetail=()=>{if(!can.value('reader-stats'))return showUpgrade('阅读统计');showDetail.value=true}
+const handleViewDetail=()=>{if(!can.value('reader-stats'))return showUpgrade('독서 통계');showDetail.value=true}
 
 // 统一刷新方法
 const refresh=()=>now.value=Date.now()
@@ -298,7 +298,7 @@ const load=async()=>{
   annotationCount.value=dbStats.annotationCount||0
   allBooks.value=books
   topBooks.value=books.filter(b=>b.time>0).sort((a,b)=>(b.time||0)-(a.time||0)).slice(0,10)
-  const statusMap={unread:'未读',reading:'在读',finished:'已完成'}
+  const statusMap={unread:'읽지 않음',reading:'읽는 중',finished:'완독'}
   statusStats.value=Object.entries(statusMap).map(([key,label])=>({key,label,count:dbStats.byStatus[key]||0}))
   const rTotal=Object.values(dbStats.byRating).reduce((s:number,c:number)=>s+c,0)
   ratings.value=[5,4,3,2,1].map(rating=>({rating,count:dbStats.byRating[rating]||0,percent:rTotal?Math.round((dbStats.byRating[rating]||0)/rTotal*100):0})).filter(r=>r.count>0)

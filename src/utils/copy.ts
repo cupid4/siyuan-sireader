@@ -75,21 +75,21 @@ const resolveExportMeta = async (ctx: ExportCtx | any) => {
   }
 }
 
-const writeClipboard = async (text: string, showMsg: ExportCtx['showMsg'], message = '已复制') => {
+const writeClipboard = async (text: string, showMsg: ExportCtx['showMsg'], message = '복사됨') => {
   await navigator.clipboard.writeText(text)
   showMsg(message)
 }
 
-const writeExport = async (text: string, ctx: ExportCtx, meta: Awaited<ReturnType<typeof resolveExportMeta>>, message = '已复制') => {
+const writeExport = async (text: string, ctx: ExportCtx, meta: Awaited<ReturnType<typeof resolveExportMeta>>, message = '복사됨') => {
   const { settings, book, title } = meta
   if (shouldInsert(settings)) {
     const docId = book?.bindDocId ? await getBoundDocId(ctx.bookUrl) : ''
     if (docId) {
       await (await import('@/utils/noteInsert')).insertToDoc(text, docId)
-      return ctx.showMsg('已插入绑定文档')
+      return ctx.showMsg('연결된 문서에 삽입됨')
     }
     await (await import('@/utils/noteInsert')).insertNote(text, settings, title, ctx.bookUrl || title)
-    return ctx.showMsg('已插入笔记')
+    return ctx.showMsg('메모에 삽입됨')
   }
   await writeClipboard(text, ctx.showMsg, message)
 }
@@ -118,7 +118,7 @@ const buildBookMarkdown = async (item: ExportItem, ctx: ExportCtx | any, meta?: 
 
 export const exportBookLink = async (item: ExportItem, ctx: ExportCtx) => {
   const meta = await resolveExportMeta(ctx)
-  await writeExport(await buildBookMarkdown(item, ctx, meta), ctx, meta, !ctx.bookUrl || !item.cfi ? '仅复制文本' : '已复制')
+  await writeExport(await buildBookMarkdown(item, ctx, meta), ctx, meta, !ctx.bookUrl || !item.cfi ? '텍스트만 복사됨' : '복사됨')
 }
 
 const markToExportItem = async (item: ExportItem | any, ctx: ExportCtx | any): Promise<ExportItem> => {
@@ -153,16 +153,16 @@ export const copyMark = async (item: any, ctx: { bookUrl: string; bookInfo?: any
 }
 
 const appendMarkToDoc = async (item: any, docId: string, ctx: any, markdown?: string) => {
-  if (!docId) return ctx.showMsg?.(ctx.i18n?.noBindDoc || '未绑定文档', 'error')
+  if (!docId) return ctx.showMsg?.(ctx.i18n?.noBindDoc || '연결된 문서 없음', 'error')
   try {
     const content = markdown || await buildMarkMarkdown(item, ctx)
-    if (!content) return ctx.showMsg?.('生成失败', 'error')
+    if (!content) return ctx.showMsg?.('생성 실패', 'error')
     const blockId = await recordInsertedBlocks(item, await (await import('@/api')).appendBlock('markdown', content, docId), ctx)
-    ctx.showMsg?.(blockId ? ctx.i18n?.imported || '已导入' : ctx.i18n?.importFailed || '导入失败', blockId ? 'info' : 'error')
+    ctx.showMsg?.(blockId ? ctx.i18n?.imported || '가져오기 완료' : ctx.i18n?.importFailed || '가져오기 실패', blockId ? 'info' : 'error')
     return blockId
   } catch (error) {
     console.error('[AppendMarkToDoc]', error)
-    ctx.showMsg?.(ctx.i18n?.importFailed || '导入失败', 'error')
+    ctx.showMsg?.(ctx.i18n?.importFailed || '가져오기 실패', 'error')
     return ''
   }
 }
@@ -172,12 +172,12 @@ export const importMark = async (item: any, ctx: any) => {
   const meta = await resolveExportMeta({ ...ctx, settings })
   const docId = await getBoundDocId(ctx.bookUrl)
   const md = await buildMarkMarkdown(item, { ...ctx, settings })
-  if (!md) return ctx.showMsg?.('生成失败', 'error')
+  if (!md) return ctx.showMsg?.('생성 실패', 'error')
   if (docId) return await appendMarkToDoc(item, docId, ctx, md)
-  if (!shouldInsert(settings)) return ctx.showMsg?.(ctx.i18n?.noBindDoc || '未绑定文档', 'error')
+  if (!shouldInsert(settings)) return ctx.showMsg?.(ctx.i18n?.noBindDoc || '연결된 문서 없음', 'error')
   const blockId = await insertGeneratedNote(item, md, settings, meta, ctx)
-  if (!blockId) return ctx.showMsg?.(ctx.i18n?.importFailed || '导入失败', 'error')
-  ctx.showMsg?.(ctx.i18n?.imported || '已导入')
+  if (!blockId) return ctx.showMsg?.(ctx.i18n?.importFailed || '가져오기 실패', 'error')
+  ctx.showMsg?.(ctx.i18n?.imported || '가져오기 완료')
   return blockId
 }
 
@@ -221,7 +221,7 @@ export const syncMarkOnDelete = async (item: any) => {
 }
 
 export const saveMarkEdit = async (mark: any, updates: any, ctx: any) => {
-  if (!ctx.marks) throw new Error('标注系统未初始化')
+  if (!ctx.marks) throw new Error('주석 시스템이 초기화되지 않았습니다')
   await ctx.marks.updateMark(mark, updates)
   updates.tags?.length && await (await import('@/composables/useSetting')).collectAnnotationTagPresets(updates.tags).catch(() => {})
   try {
@@ -245,7 +245,7 @@ export const openNoteTargetFloat = async (bookUrl: string, settings: any, el: HT
   const docId = boundId
     || (target === 'document' ? settings?.parentDoc?.id || '' : '')
     || (target === 'current' ? await (await import('@/utils/noteInsert')).getCurrentDocId() : '')
-  if (!docId) throw new Error(target === 'clipboard' ? '请先绑定文档或将插入位置设为文档/打开文档' : '未找到目标文档')
+  if (!docId) throw new Error(target === 'clipboard' ? '먼저 문서를 연결하거나 삽입 위치를 문서로 설정하세요' : '대상 문서를 찾을 수 없습니다')
   hideFloat()
   _plugin?.addFloatLayer?.({ refDefs: [{ refID: docId }], targetElement: el, isBacklink: false })
 }

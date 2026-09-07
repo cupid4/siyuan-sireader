@@ -14,6 +14,7 @@ const parseJson = <T>(value: any, fallback: T): T => {
   }
 }
 const same = (a: any, b: any) => JSON.stringify(a) === JSON.stringify(b)
+const normalizeAuthor = (a?: string) => (!a || a === '未知作者' || a === 'Unknown' || a === '作/译者未知' || a === '작자 미상') ? '작자 미상' : a
 export interface Book {
   url: string
   title: string
@@ -126,13 +127,17 @@ export class ReaderDatabase {
   private async loadStorage() {
     const { booksRaw, settingsRaw, dailyRaw } = await this.readStorageState()
     this.books = parseJson(booksRaw.value, {})
+    Object.values(this.books).forEach(b => { if (b) b.author = normalizeAuthor(b.author) })
     this.settings = parseJson(settingsRaw.value, {})
     this.dailyReading = parseJson(dailyRaw.value, {})
   }
 
   private async reloadStorage() {
     const { booksRaw, settingsRaw, dailyRaw } = await this.readStorageState()
-    if (booksRaw.found) this.books = parseJson(booksRaw.value, {})
+    if (booksRaw.found) {
+      this.books = parseJson(booksRaw.value, {})
+      Object.values(this.books).forEach(b => { if (b) b.author = normalizeAuthor(b.author) })
+    }
     if (settingsRaw.found) this.settings = parseJson(settingsRaw.value, {})
     if (dailyRaw.found) this.dailyReading = parseJson(dailyRaw.value, {})
   }
@@ -222,7 +227,7 @@ export class ReaderDatabase {
     return {
       url: book.url,
       title: book.title,
-      author: book.author || '',
+      author: normalizeAuthor(book.author),
       cover: book.cover || '',
       format: book.format,
       path: '',
@@ -294,6 +299,7 @@ export class ReaderDatabase {
       ...this.mergeRecordBook(book, record?.book),
       annotationCount: record?.annotations?.length || 0,
     }
+    if (full.author) full.author = normalizeAuthor(full.author)
     if (!book.cover && full.cover) this.persistBookIndex(full)
     return full
   }

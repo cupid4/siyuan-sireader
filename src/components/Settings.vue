@@ -31,11 +31,11 @@ const loadTTS = async () => {
     const {loadOnlineVoices,loadLocalVoices} = await import('@/services/TTSEngine')
     const [local,online] = await Promise.allSettled([loadLocalVoices(),loadOnlineVoices()])
     ttsVoices.value = [...(local.status==='fulfilled'?local.value:[]),...(online.status==='fulfilled'?online.value:[])]
-    if (!ttsVoices.value.length) showMessage(props.i18n.loadVoicesFailed||'加载失败',3000,'error')
-  } catch (e:any) { showMessage(e.message||props.i18n.loadVoicesFailed||'加载失败',3000,'error') } finally { loadingTTS.value = false }
+    if (!ttsVoices.value.length) showMessage(props.i18n.loadVoicesFailed||'불러오기 실패',3000,'error')
+  } catch (e:any) { showMessage(e.message||props.i18n.loadVoicesFailed||'불러오기 실패',3000,'error') } finally { loadingTTS.value = false }
 }
 const selectVoice = (name:string,isLocal:boolean) => {
-  if (!isLocal&&!can.value('tts-online')) return showUpgrade('在线语音')
+  if (!isLocal&&!can.value('tts-online')) return showUpgrade('온라인 음성')
   if (!settings.value.tts) return
   settings.value.tts.voice = name
   save()
@@ -45,7 +45,7 @@ const toggleFav = (voice:any) => {
   const fav = settings.value.tts.favoriteVoices||[]
   const idx = fav.findIndex(v => v.name===voice.name)
   idx>=0?fav.splice(idx,1):fav.push({name:voice.name,displayName:voice.displayName,locale:voice.locale,isLocal:voice.isLocal})
-  settings.value.tts.favoriteVoices = fav; showMessage(idx>=0?(props.i18n.deleted||'已删除'):(props.i18n.ttsVoiceFavorited||'已收藏'),1500,'info'); save()
+  settings.value.tts.favoriteVoices = fav; showMessage(idx>=0?(props.i18n.deleted||'삭제되었습니다'):(props.i18n.ttsVoiceFavorited||'즐겨찾기에 추가됨'),1500,'info'); save()
 }
 const isFav = (name:string) => (settings.value.tts?.favoriteVoices||[]).some(v => v.name===name)
 const myVoices = computed(() => [...ttsVoices.value.filter(v => v.isLocal),...(settings.value.tts?.favoriteVoices||[]).filter(v => !v.isLocal)])
@@ -86,10 +86,10 @@ const selectField = (key:string, label:string, value:string, options:any[], set:
 const checkboxField = (key:string, label:string, value:boolean, set:(value:boolean)=>void, show=true, hint='') => ({ key, type: 'checkbox', label, value, set, show, hint })
 const searchField = (key:string, label:string, docs:any[], input:string, results:any[], setInput:(value:string)=>void, search:()=>void, select:(doc:any)=>void, remove:(doc:any,i:number)=>void, show=true, hint='', drag?:'quickDoc') => ({ key, type: 'search', label, docs, input, results, setInput, search, select, remove, show, hint, drag })
 const bookshelfHiddenFields = [
-  { key: 'bookshelfHideProgress', value: 'progress', label: '隐藏书架进度' },
-  { key: 'bookshelfHideStatus', value: 'status', label: '隐藏书架状态' },
-  { key: 'bookshelfHideRating', value: 'rating', label: '隐藏书架评分' },
-  { key: 'bookshelfHideLastRead', value: 'lastRead', label: '隐藏最近阅读' },
+  { key: 'bookshelfHideProgress', value: 'progress', label: props.i18n.bookshelfHideProgress || '서재 진도 숨기기' },
+  { key: 'bookshelfHideStatus', value: 'status', label: props.i18n.bookshelfHideStatus || '서재 상태 숨기기' },
+  { key: 'bookshelfHideRating', value: 'rating', label: props.i18n.bookshelfHideRating || '서재 평점 숨기기' },
+  { key: 'bookshelfHideLastRead', value: 'lastRead', label: props.i18n.bookshelfHideLastRead || '최근 읽음 숨기기' },
 ]
 const toggleBookshelfHidden = (key:string, checked:boolean) => {
   const set = new Set(settings.value.bookshelfHiddenItems || [])
@@ -99,37 +99,37 @@ const toggleBookshelfHidden = (key:string, checked:boolean) => {
 }
 const dictSections = computed(() => [
   {
-    key: 'offlineDict', title: props.i18n.offlineDict||'离线词典', items: offlineDicts.value, empty: props.i18n.noDicts||'暂无离线词典',
+    key: 'offlineDict', title: props.i18n.offlineDict||'오프라인 사전', items: offlineDicts.value, empty: props.i18n.noDicts||'오프라인 사전 없음',
     extra: true, manager: offlineDictManager, desc: (d:any) => d.type==='stardict'?'StarDict':'dictd', drop: (e:DragEvent,i:number) => dragDrop(e,i,'dict',offlineDicts,offlineDictManager)
   },
   {
-    key: 'onlineDict', title: props.i18n.onlineDict||'在线词典', items: onlineDicts.value, empty: '', manager: onlineDictManager, desc: (d:any) => d.desc, drop: (e:DragEvent,i:number) => dragDrop(e,i,'dict',onlineDicts,onlineDictManager)
+    key: 'onlineDict', title: props.i18n.onlineDict||'온라인 사전', items: onlineDicts.value, empty: '', manager: onlineDictManager, desc: (d:any) => d.desc, drop: (e:DragEvent,i:number) => dragDrop(e,i,'dict',onlineDicts,onlineDictManager)
   }
 ])
 const voiceSections = computed(() => [
   {
-    key: 'ttsFavorites', title: props.i18n.ttsFavoriteVoices||'我的语音', hint: `${props.i18n.ttsCurrentVoice||'当前'}: ${settings.value.tts?.voice||''}`,
-    rows: myVoices.value.map((v:any) => ({ key: v.name, text: v.displayName, meta: v.isLocal ? (props.i18n.localVoice || '本地') : v.locale, active: settings.value.tts?.voice === v.name, pick: () => selectVoice(v.name,v.isLocal), action: v.isLocal ? undefined : () => toggleFav(v), actionTitle: props.i18n.delete || '删除' })),
-    empty: props.i18n.ttsNoFavorites||'暂无，请点击下方加载'
+    key: 'ttsFavorites', title: props.i18n.ttsFavoriteVoices||'내 음성', hint: `${props.i18n.ttsCurrentVoice||'현재'}: ${settings.value.tts?.voice||''}`,
+    rows: myVoices.value.map((v:any) => ({ key: v.name, text: v.displayName, meta: v.isLocal ? (props.i18n.localVoice || '로컬') : v.locale, active: settings.value.tts?.voice === v.name, pick: () => selectVoice(v.name,v.isLocal), action: v.isLocal ? undefined : () => toggleFav(v), actionTitle: props.i18n.delete || '삭제' })),
+    empty: props.i18n.ttsNoFavorites||'즐겨찾기가 없습니다. 아래에서 불러오세요'
   },
   {
-    key: 'ttsVoices', title: props.i18n.ttsVoiceList||'在线语音', hint: props.i18n.ttsOnlineHint||'点击语音名称选择，点击星号收藏',
-    rows: onlineVoices.value.map((v:any) => ({ key: v.name, text: v.displayName, meta: v.locale, active: settings.value.tts?.voice === v.name, pick: () => selectVoice(v.name,false), action: () => toggleFav(v), actionTitle: isFav(v.name)?'取消收藏':'收藏' })),
-    empty: props.i18n.ttsNoVoices||'暂无语音', loadLabel: props.i18n.ttsLoadVoices || '加载语音'
+    key: 'ttsVoices', title: props.i18n.ttsVoiceList||'온라인 음성', hint: props.i18n.ttsOnlineHint||'음성 이름을 클릭하여 선택하고 별표를 클릭하여 즐겨찾기에 추가하세요',
+    rows: onlineVoices.value.map((v:any) => ({ key: v.name, text: v.displayName, meta: v.locale, active: settings.value.tts?.voice === v.name, pick: () => selectVoice(v.name,false), action: () => toggleFav(v), actionTitle: isFav(v.name)?'즐겨찾기 해제':'즐겨찾기' })),
+    empty: props.i18n.ttsNoVoices||'음성이 없습니다', loadLabel: props.i18n.ttsLoadVoices || '음성 불러오기'
   }
 ])
 const noteFields = computed(() => [
-  checkboxField('annotationSyncOnAdd', props.i18n.annotationSyncOnAdd || '添加时同步', settings.value.annotationSyncOnAdd, value => (settings.value.annotationSyncOnAdd = value, save()), true, props.i18n.annotationSyncOnAddDesc || '新增标注时自动同步到已绑定文档'),
-  checkboxField('annotationSyncOnDelete', props.i18n.annotationSyncOnDelete || '删除时同步', settings.value.annotationSyncOnDelete, value => (settings.value.annotationSyncOnDelete = value, save()), true, props.i18n.annotationSyncOnDeleteDesc || '删除标注时同步删除已绑定块'),
-  selectField('noteInsertTarget', props.i18n.noteInsertTarget || '插入位置', settings.value.noteInsertTarget, NOTE_TARGET_OPTIONS.map(value => ({ value, label: props.i18n[`noteInsertTarget${value.charAt(0).toUpperCase()}${value.slice(1)}`] || value })), value => (settings.value.noteInsertTarget = value as any, save())),
-  selectField('noteInsertMode', props.i18n.noteInsertMode || '插入方式', settings.value.noteInsertMode, NOTE_MODE_OPTIONS.map(value => ({ value, label: props.i18n[NOTE_MODE_LABELS[value]] || value })), value => (settings.value.noteInsertMode = value as any, save()), settings.value.noteInsertTarget === 'current'),
-  selectField('notebookId', props.i18n.notebookId || props.i18n.notebook || '笔记本', settings.value.notebookId || '', notebooks.value.map((nb:any) => ({ value: nb.id, label: nb.name })), value => (settings.value.notebookId = value, save()), ['notebook', 'dailynote'].includes(settings.value.noteInsertTarget), props.i18n.notSelected || '未选择'),
-  selectField('linkFormatPreset', props.i18n.linkFormatPreset || '模板预设', linkFormatPresetValue.value, linkFormatPresetOptions.map(value => ({ value: LINK_FORMAT_PRESETS[value], label: props.i18n[`linkFormatPreset${value.charAt(0).toUpperCase()}${value.slice(1)}`] || value })), applyLinkFormatPreset, true, props.i18n.selectPreset || '请选择'),
-  { key: 'linkFormat', type: 'textarea', label: props.i18n.linkFormat || '链接格式', value: settings.value.linkFormat, set: (value:string) => (settings.value.linkFormat = value, debouncedSave()), hint: props.i18n.linkFormatDesc || '可用变量：书名 作者 章节 位置 链接 文本 笔记 图片' },
-  { key: 'docAssetExcludeRegex', type: 'textarea', rows: 3, label: props.i18n.docAssetExcludeRegex || '文档链接入库排除正则', value: settings.value.docAssetExcludeRegex, set: (value:string) => (settings.value.docAssetExcludeRegex = value, debouncedSave()), hint: props.i18n.docAssetExcludeRegexDesc || '匹配后仍按开关打开，但不自动加入书架；不用写外层 /.../；留空则不过滤', placeholder: props.i18n.docAssetExcludeRegexPlaceholder || '示例：^(发票|收据|报销).*\\.pdf$|.*办法.*\\.pdf$\n^ 开头；$ 结尾；| 或；() 分组；.* 任意文字；\\. 匹配普通点\n排除“2007新的编制办法-xxx.pdf”：写 .*办法.*\\.pdf$' },
-  { key: 'annotationTagPresets', type: 'textarea', label: props.i18n.annotationTagPresets || '标注标签预设', value: settings.value.annotationTagPresets, set: (value:string) => (settings.value.annotationTagPresets = value, debouncedSave()), hint: props.i18n.annotationTagPresetsDesc || '每行一组：分组: 标签1, 标签2' },
-  searchField('parentDoc', props.i18n.parentDoc || '父文档', settings.value.parentDoc ? [settings.value.parentDoc] : [], insertDoc.state.value.input, insertDoc.state.value.results, value => (insertDoc.state.value.input = value, !value.trim() && (insertDoc.state.value.results = [])), insertDoc.search, doc => insertDoc.select(doc, selectInsertDoc), () => clearInsertDoc(), settings.value.noteInsertTarget === 'document'),
-  searchField('quickSendDocs', props.i18n.quickSendDocs || '快捷发送文档', settings.value.quickSendDocs || [], quickDoc.state.value.input, quickDoc.state.value.results, value => (quickDoc.state.value.input = value, !value.trim() && (quickDoc.state.value.results = [])), quickDoc.search, doc => quickDoc.select(doc, addQuickDoc), (_doc:any, i:number) => removeQuickDoc(i), true, props.i18n.quickSendDocsDesc || '用于快速发送标注', 'quickDoc')
+  checkboxField('annotationSyncOnAdd', props.i18n.annotationSyncOnAdd || '추가 시 동기화', settings.value.annotationSyncOnAdd, value => (settings.value.annotationSyncOnAdd = value, save()), true, props.i18n.annotationSyncOnAddDesc || '주석 추가 시 연결된 문서에 자동 동기화'),
+  checkboxField('annotationSyncOnDelete', props.i18n.annotationSyncOnDelete || '삭제 시 동기화', settings.value.annotationSyncOnDelete, value => (settings.value.annotationSyncOnDelete = value, save()), true, props.i18n.annotationSyncOnDeleteDesc || '주석 삭제 시 연결된 블록 함께 삭제'),
+  selectField('noteInsertTarget', props.i18n.noteInsertTarget || '삽입 위치', settings.value.noteInsertTarget, NOTE_TARGET_OPTIONS.map(value => ({ value, label: props.i18n[`noteInsertTarget${value.charAt(0).toUpperCase()}${value.slice(1)}`] || value })), value => (settings.value.noteInsertTarget = value as any, save())),
+  selectField('noteInsertMode', props.i18n.noteInsertMode || '삽입 방식', settings.value.noteInsertMode, NOTE_MODE_OPTIONS.map(value => ({ value, label: props.i18n[NOTE_MODE_LABELS[value]] || value })), value => (settings.value.noteInsertMode = value as any, save()), settings.value.noteInsertTarget === 'current'),
+  selectField('notebookId', props.i18n.notebookId || props.i18n.notebook || '노트북', settings.value.notebookId || '', notebooks.value.map((nb:any) => ({ value: nb.id, label: nb.name })), value => (settings.value.notebookId = value, save()), ['notebook', 'dailynote'].includes(settings.value.noteInsertTarget), props.i18n.notSelected || '선택 안 됨'),
+  selectField('linkFormatPreset', props.i18n.linkFormatPreset || '템플릿 프리셋', linkFormatPresetValue.value, linkFormatPresetOptions.map(value => ({ value: LINK_FORMAT_PRESETS[value], label: props.i18n[`linkFormatPreset${value.charAt(0).toUpperCase()}${value.slice(1)}`] || value })), applyLinkFormatPreset, true, props.i18n.selectPreset || '선택하세요'),
+  { key: 'linkFormat', type: 'textarea', label: props.i18n.linkFormat || '링크 서식', value: settings.value.linkFormat, set: (value:string) => (settings.value.linkFormat = value, debouncedSave()), hint: props.i18n.linkFormatDesc || '사용 가능한 변수: 서명, 저자, 챕터, 위치, 링크, 텍스트, 메모, 이미지' },
+  { key: 'docAssetExcludeRegex', type: 'textarea', rows: 3, label: props.i18n.docAssetExcludeRegex || '문서 링크 제외 정규식', value: settings.value.docAssetExcludeRegex, set: (value:string) => (settings.value.docAssetExcludeRegex = value, debouncedSave()), hint: props.i18n.docAssetExcludeRegexDesc || '匹配后仍按开关打开，但不自动加入书架；不用写外层 /.../；留空则不过滤', placeholder: props.i18n.docAssetExcludeRegexPlaceholder || '示例：^(发票|收据|报销).*\\.pdf$|.*办法.*\\.pdf$\n^ 开头；$ 结尾；| 或；() 分组；.* 任意文字；\\. 匹配普通点\n排除“2007新的编制办法-xxx.pdf”：写 .*办法.*\\.pdf$' },
+  { key: 'annotationTagPresets', type: 'textarea', label: props.i18n.annotationTagPresets || '주석 태그 프리셋', value: settings.value.annotationTagPresets, set: (value:string) => (settings.value.annotationTagPresets = value, debouncedSave()), hint: props.i18n.annotationTagPresetsDesc || '每行一组：分组: 标签1, 标签2' },
+  searchField('parentDoc', props.i18n.parentDoc || '상위 문서', settings.value.parentDoc ? [settings.value.parentDoc] : [], insertDoc.state.value.input, insertDoc.state.value.results, value => (insertDoc.state.value.input = value, !value.trim() && (insertDoc.state.value.results = [])), insertDoc.search, doc => insertDoc.select(doc, selectInsertDoc), () => clearInsertDoc(), settings.value.noteInsertTarget === 'document'),
+  searchField('quickSendDocs', props.i18n.quickSendDocs || '빠른 전송 문서', settings.value.quickSendDocs || [], quickDoc.state.value.input, quickDoc.state.value.results, value => (quickDoc.state.value.input = value, !value.trim() && (quickDoc.state.value.results = [])), quickDoc.search, doc => quickDoc.select(doc, addQuickDoc), (_doc:any, i:number) => removeQuickDoc(i), true, props.i18n.quickSendDocsDesc || '주석을 빠르게 전송할 문서 지정', 'quickDoc')
 ].filter((item:any) => item.show !== false))
 
 // 交互方法
@@ -149,8 +149,8 @@ const handleUpload = async (e:Event) => {
   try {
     await offlineDictManager.addDict(files)
     refreshDicts()
-    showMessage(`${props.i18n.addedDict || '添加'} ${files.length} ${props.i18n.dictFiles || '个词典文件'}`, 2000, 'info')
-  } catch (e:any) { showMessage(e.message || props.i18n.addFailed || '添加失败', 3000, 'error') } finally { uploading.value = false; if (fileInput.value) fileInput.value.value = ''; if (folderInput.value) folderInput.value.value = '' }
+    showMessage(`${props.i18n.addedDict || '추가됨'} ${files.length} ${props.i18n.dictFiles || '개 사전 파일'}`, 2000, 'info')
+  } catch (e:any) { showMessage(e.message || props.i18n.addFailed || '추가 실패', 3000, 'error') } finally { uploading.value = false; if (fileInput.value) fileInput.value.value = ''; if (folderInput.value) folderInput.value.value = '' }
 }
 const removeDict = async (id:string) => {
   await offlineDictManager.removeDict(id)
@@ -163,8 +163,8 @@ const toggleDict = async (manager:any, id:string) => { await manager.toggleDict(
 const setQuickDocs = (docs:any[]) => (settings.value = { ...settings.value, quickSendDocs: docs }, save())
 const addQuickDoc = (doc:any) => {
   const docs = settings.value.quickSendDocs || []
-  if (!doc?.id) return showMessage(props.i18n.invalidDoc || '无效文档', 2000, 'error')
-  if (docs.some(d => d.id === doc.id)) return showMessage(props.i18n.alreadyExists || '已存在', 2000, 'error')
+  if (!doc?.id) return showMessage(props.i18n.invalidDoc || '유효하지 않은 문서', 2000, 'error')
+  if (docs.some(d => d.id === doc.id)) return showMessage(props.i18n.alreadyExists || '이미 존재함', 2000, 'error')
   setQuickDocs([...docs, doc])
 }
 const removeQuickDoc = (i:number) => {
@@ -177,17 +177,17 @@ const clearInsertDoc = () => { settings.value.parentDoc = undefined; insertDoc.r
 const uploadBgImage = async (e:Event) => {
   if (!can.value('reader-theme')) return showUpgrade('reader-theme')
   try { await setCustomBackgroundFromInput(settings.value, e) && save() }
-  catch (e:any) { showMessage(e.message || props.i18n.uploadFailed || '上传失败', 3000, 'error') }
+  catch (e:any) { showMessage(e.message || props.i18n.uploadFailed || '업로드 실패', 3000, 'error') }
 }
 const clearBgImage = () => (settings.value.customTheme.bgImg = '', save())
 const bgImageRows = computed(() => [{
   key: 'bgImg',
-  text: props.i18n.bgImage || '背景图片',
+  text: props.i18n.bgImage || '배경 이미지',
   hint: settings.value.customTheme.bgImg || props.i18n.bgImageDesc || '',
   checkbox: !!settings.value.customTheme.bgImg,
   onCheck: (value:boolean) => value ? bgInput.value?.click() : clearBgImage(),
   action: () => bgInput.value?.click(),
-  actionTitle: props.i18n.select || props.i18n.upload || '选择',
+  actionTitle: props.i18n.select || props.i18n.upload || '선택',
   actionIcon: '#iconUpload'
 }])
 const applyLinkFormatPreset = (format:string) => {
@@ -220,10 +220,10 @@ const docRows = (field:any) => (field.docs || []).map((doc:any, i:number) => ({
   dragover: (e:DragEvent) => field.drag && dragOver(e),
   drop: (e:DragEvent) => field.drag && dragDrop(e, i, field.drag),
   action: () => field.remove(doc, i),
-  actionTitle: props.i18n.delete || '删除',
+  actionTitle: props.i18n.delete || '삭제',
   actionIcon: '#iconTrashcan'
 }))
-const docResultRows = (field:any) => (field.results || []).map((doc:any) => ({ key: doc.id, text: doc.hPath || doc.content || '无标题', pick: () => field.select(doc) }))
+const docResultRows = (field:any) => (field.results || []).map((doc:any) => ({ key: doc.id, text: doc.hPath || doc.content || '제목 없음', pick: () => field.select(doc) }))
 const navRows = computed(() => navItems.value.map((item, idx) => ({
   key: item.id,
   text: props.i18n[item.tip] || item.tip,
@@ -246,10 +246,10 @@ const bookshelfRows = computed(() => bookshelfHiddenFields.map(item => ({
 const fontGuideRows = computed(() => [{
   key: 'custom-fonts',
   text: 'data/plugins/custom-fonts/',
-  hint: isLoadingFonts.value ? (props.i18n.loadingFonts || '正在加载字体') : '',
+  hint: isLoadingFonts.value ? (props.i18n.loadingFonts || '글꼴 불러오는 중') : '',
   alwaysShowActions: true,
   action: () => loadCustomFonts(true),
-  actionTitle: props.i18n.refresh || '刷新',
+  actionTitle: props.i18n.refresh || '새로고침',
   actionIcon: '#lucide-refresh-cw'
 }])
 const fontRows = computed(() => customFonts.value.map(f => ({
@@ -264,15 +264,15 @@ const fontRows = computed(() => customFonts.value.map(f => ({
 })))
 const dictAddRows = computed(() => [{
   key: 'add-dict',
-  text: uploading.value ? (props.i18n.uploading || '上传中') : (props.i18n.addDict || '添加词典'),
+  text: uploading.value ? (props.i18n.uploading || '업로드 중') : (props.i18n.addDict || '사전 추가'),
   alwaysShowActions: true,
   actions: [
-    { key: 'help', title: props.i18n.dictFormatHint || '支持 StarDict 和 dictd 格式', icon: '#iconHelp', onClick: () => openPage(dictHelpUrl) },
-    { key: 'file', title: props.i18n.addDict || '添加词典', icon: '#iconUpload', onClick: () => !uploading.value && (can.value('dict-offline') ? fileInput.value?.click() : showUpgrade('dict-offline')) },
+    { key: 'help', title: props.i18n.dictFormatHint || 'StarDict 및 dictd 포맷 지원', icon: '#iconHelp', onClick: () => openPage(dictHelpUrl) },
+    { key: 'file', title: props.i18n.addDict || '사전 추가', icon: '#iconUpload', onClick: () => !uploading.value && (can.value('dict-offline') ? fileInput.value?.click() : showUpgrade('dict-offline')) },
     { key: 'folder', title: props.i18n.importFolder || 'Import folder', icon: '#iconFolder', onClick: () => !uploading.value && (can.value('dict-offline') ? folderInput.value?.click() : showUpgrade('dict-offline')) }
   ]
 }])
-const confirmDeleteHint = (text:string, id:string) => removingDict.value === id ? `${text} · ${props.i18n.confirmDelete || '再次点击删除'}` : text
+const confirmDeleteHint = (text:string, id:string) => removingDict.value === id ? `${text} · ${props.i18n.confirmDelete || '다시 클릭하여 삭제'}` : text
 const dictRows = (section:any) => section.items.map((d:any, idx:number) => ({
   key: d.id,
   text: d.name,
@@ -286,14 +286,14 @@ const dictRows = (section:any) => section.items.map((d:any, idx:number) => ({
   checkbox: d.enabled,
   onCheck: () => toggleDict(section.manager, d.id),
   action: section.extra ? () => removingDict.value === d.id ? removeDict(d.id) : (removingDict.value = d.id) : undefined,
-  actionTitle: removingDict.value === d.id ? (props.i18n.confirm || '确认') : (props.i18n.delete || '删除'),
+  actionTitle: removingDict.value === d.id ? (props.i18n.confirm || '확인') : (props.i18n.delete || '삭제'),
   actionIcon: removingDict.value === d.id ? '#lucide-trash-2' : '#iconTrashcan'
 }))
 // 保存
 const save = async () => (emit('update:modelValue',settings.value),await props.onSave())
 const debouncedSave = (() => {let t:any;return () => (clearTimeout(t),t=setTimeout(save,300))})()
 const setFont = (f?:FontFileInfo) => (settings.value.textSettings.fontFamily=f?'custom':'inherit',settings.value.textSettings.customFont=f?{fontFamily:f.displayName,fontFile:f.name}:{fontFamily:'',fontFile:''},f?debouncedSave():save())
-const saveTheme = () => { if (!can.value('reader-theme')) return settings.value.theme='default', showUpgrade('主题配色'); save() }
+const saveTheme = () => { if (!can.value('reader-theme')) return settings.value.theme='default', showUpgrade('테마'); save() }
 const openPage = (url:string) => window.open(url,'_blank')
 const dictHelpUrl = `https://github.com/mm-o/siyuan-sireader/blob/main/docs/${encodeURIComponent('离线词典使用说明.md')}`
 const openPurchasePage = () => openPage('https://pay.ldxp.cn/shop/J7MJJ8YR/lillyt')
@@ -324,9 +324,9 @@ onUnmounted(() => window.removeEventListener('sireaderSettingsUpdated', syncAnno
   <div class="fn__flex-1 fn__flex-column bs-view bs-tree">
     <div class="fn__flex-1 bs-tree__scroll" @pointerdown.stop @click.stop @input.stop @change.stop @contextmenu.prevent.stop>
         <ul ref="licenseRef" class="b3-list b3-list--background" data-name="license">
-          <SectionTitle :title="i18n.membership || '会员订阅'" :icon="settingSectionIcon('root', 'license')" :open="isOpen('license')" @toggle="toggleAccordion('license')">
+          <SectionTitle :title="i18n.membership || '구독 멤버십'" :icon="settingSectionIcon('root', 'license')" :open="isOpen('license')" @toggle="toggleAccordion('license')">
             <span class="fn__space"></span>
-            <span class="b3-list-item__action b3-tooltips b3-tooltips__w" :aria-label="i18n.usageTitle || '使用说明'" @click.stop="openMembershipInfo"><svg><use xlink:href="#iconHelp"></use></svg></span>
+            <span class="b3-list-item__action b3-tooltips b3-tooltips__w" :aria-label="i18n.usageTitle || '사용 설명'" @click.stop="openMembershipInfo"><svg><use xlink:href="#iconHelp"></use></svg></span>
           </SectionTitle>
           <template v-if="isOpen('license')">
             <SettingRows v-if="loadingLicense" :rows="[]" :loading="true" :i18n="i18n" />
@@ -342,14 +342,14 @@ onUnmounted(() => window.removeEventListener('sireaderSettingsUpdated', syncAnno
                 </div>
                 <div class="fn__flex-1 fn__flex-column">
                   <div class="fn__flex-1">
-                    {{ license?.userName || i18n.membership || '会员订阅' }}
+                    {{ license?.userName || i18n.membership || '구독 멤버십' }}
                     <div v-for="line in licenseMedia.lines" :key="line" class="ft__smaller ft__on-surface">{{ line }}</div>
                     <input
                       v-if="!license"
                       v-model="activationCode"
                       type="text"
                       class="b3-text-field"
-                      :placeholder="i18n.enterActivationCode || '激活码'"
+                      :placeholder="i18n.enterActivationCode || '활성화 코드'"
                       :disabled="processing"
                       @mousedown.stop
                       @pointerdown.stop
@@ -361,20 +361,20 @@ onUnmounted(() => window.removeEventListener('sireaderSettingsUpdated', syncAnno
               <span class="fn__space"></span>
               <div class="fn__flex" style="align-self:flex-end">
                 <template v-if="license">
-                  <span class="b3-list-item__action b3-tooltips b3-tooltips__nw" :aria-label="i18n.logout || '退出'" @click.stop="clearLicense"><svg><use xlink:href="#lucide-x"></use></svg></span>
-                  <span class="b3-list-item__action b3-tooltips b3-tooltips__nw" :aria-label="i18n.purchase || '购买'" @click.stop="openPurchasePage"><svg><use xlink:href="#lucide-shopping-bag"></use></svg></span>
+                  <span class="b3-list-item__action b3-tooltips b3-tooltips__nw" :aria-label="i18n.logout || '로그아웃'" @click.stop="clearLicense"><svg><use xlink:href="#lucide-x"></use></svg></span>
+                  <span class="b3-list-item__action b3-tooltips b3-tooltips__nw" :aria-label="i18n.purchase || '구매'" @click.stop="openPurchasePage"><svg><use xlink:href="#lucide-shopping-bag"></use></svg></span>
                 </template>
                 <template v-else>
-                  <button class="b3-button b3-button--outline" :disabled="processing || !activationCode.trim()" @click.stop="activateLicense">{{ processing ? (i18n.processing || '处理中') : (i18n.activate || '激活') }}</button>
-                  <button class="b3-button b3-button--text" :disabled="processing" @click.stop="recoverLicense">{{ i18n.recover || '恢复' }}</button>
-                  <span class="b3-list-item__action b3-tooltips b3-tooltips__nw" :aria-label="i18n.purchase || '购买'" @click.stop="openPurchasePage"><svg><use xlink:href="#lucide-shopping-bag"></use></svg></span>
+                  <button class="b3-button b3-button--outline" :disabled="processing || !activationCode.trim()" @click.stop="activateLicense">{{ processing ? (i18n.processing || '처리 중') : (i18n.activate || '활성화') }}</button>
+                  <button class="b3-button b3-button--text" :disabled="processing" @click.stop="recoverLicense">{{ i18n.recover || '복구' }}</button>
+                  <span class="b3-list-item__action b3-tooltips b3-tooltips__nw" :aria-label="i18n.purchase || '구매'" @click.stop="openPurchasePage"><svg><use xlink:href="#lucide-shopping-bag"></use></svg></span>
                 </template>
               </div>
             </li>
           </template>
         </ul>
 
-        <SettingSection :title="i18n.interfaceLayout || '界面布局'" :icon="settingSectionIcon('root', 'interface')" :open="isOpen('interface')" @toggle="toggleAccordion('interface')">
+        <SettingSection :title="i18n.interfaceLayout || '인터페이스 레이아웃'" :icon="settingSectionIcon('root', 'interface')" :open="isOpen('interface')" @toggle="toggleAccordion('interface')">
             <SettingItem
               v-for="item in interfaceItems"
               :key="item.key"
@@ -386,18 +386,18 @@ onUnmounted(() => window.removeEventListener('sireaderSettingsUpdated', syncAnno
               @change="value => (settings[item.key] = value, save())"
               @input="value => (settings[item.key] = value, debouncedSave())"
             />
-            <SectionTitle :title="i18n.navConfig || '导航配置'" :icon="settingSectionIcon('sub', 'navItems')" :open="isSubOpen('navItems')" @toggle="toggleSub('navItems')" />
+            <SectionTitle :title="i18n.navConfig || '내비게이션 설정'" :icon="settingSectionIcon('sub', 'navItems')" :open="isSubOpen('navItems')" @toggle="toggleSub('navItems')" />
             <template v-if="isSubOpen('navItems')">
               <SettingRows :rows="navRows" :i18n="i18n" />
             </template>
-            <SectionTitle :title="i18n.bookshelfConfig || '书架配置'" icon="#lucide-library-big" :open="isSubOpen('bookshelfConfig')" @toggle="toggleSub('bookshelfConfig')" />
+            <SectionTitle :title="i18n.bookshelfConfig || '서재 설정'" icon="#lucide-library-big" :open="isSubOpen('bookshelfConfig')" @toggle="toggleSub('bookshelfConfig')" />
             <template v-if="isSubOpen('bookshelfConfig')">
               <SettingRows :rows="bookshelfRows" :i18n="i18n" />
             </template>
         </SettingSection>
 
-        <SettingSection :title="i18n.readingTheme || '阅读主题'" :icon="settingSectionIcon('root', 'theme')" :open="isOpen('theme')" @toggle="toggleAccordion('theme')">
-            <SettingItem :item="presetThemeItem" :model-value="settings.theme" :label="i18n.presetTheme || '预设主题'" :hint="i18n.presetThemeDesc || ''" :i18n="i18n" @change="value => (settings.theme = value, saveTheme())" />
+        <SettingSection :title="i18n.readingTheme || '읽기 테마'" :icon="settingSectionIcon('root', 'theme')" :open="isOpen('theme')" @toggle="toggleAccordion('theme')">
+            <SettingItem :item="presetThemeItem" :model-value="settings.theme" :label="i18n.presetTheme || '프리셋 테마'" :hint="i18n.presetThemeDesc || ''" :i18n="i18n" @change="value => (settings.theme = value, saveTheme())" />
             <template v-if="settings.theme === 'custom'">
               <SettingItem
                 v-for="item in themeItems"
@@ -427,19 +427,19 @@ onUnmounted(() => window.removeEventListener('sireaderSettingsUpdated', syncAnno
               @input="value => (settings[group.title][item.key] = value, debouncedSave())"
             />
             <template v-if="group.title === 'textSettings'">
-              <SectionTitle :title="i18n.customFont || '自定义字体'" :icon="settingSectionIcon('sub', 'customFont')" :open="isSubOpen('customFont')" @toggle="toggleSub('customFont')" />
+              <SectionTitle :title="i18n.customFont || '사용자 지정 글꼴'" :icon="settingSectionIcon('sub', 'customFont')" :open="isSubOpen('customFont')" @toggle="toggleSub('customFont')" />
               <template v-if="isSubOpen('customFont')">
                 <SettingRows :rows="fontGuideRows" :i18n="i18n" />
-                <SettingRows :rows="fontRows" :loading="isLoadingFonts" :empty="i18n.noCustomFonts || '暂无自定义字体'" :i18n="i18n" />
+                <SettingRows :rows="fontRows" :loading="isLoadingFonts" :empty="i18n.noCustomFonts || '사용자 지정 글꼴 없음'" :i18n="i18n" />
               </template>
             </template>
         </SettingSection>
 
-        <SettingSection :title="i18n.dictionaryTools || '词典翻译'" :icon="settingSectionIcon('root', 'dictionary')" :open="isOpen('dictionary')" @toggle="toggleAccordion('dictionary')">
+        <SettingSection :title="i18n.dictionaryTools || '사전 및 번역'" :icon="settingSectionIcon('root', 'dictionary')" :open="isOpen('dictionary')" @toggle="toggleAccordion('dictionary')">
             <input ref="fileInput" type="file" multiple accept=".ifo,.idx,.dict,.dict.dz,.dz,.index,.syn" class="fn__none" @change="handleUpload">
             <input ref="folderInput" type="file" multiple webkitdirectory directory accept=".ifo,.idx,.dict,.dict.dz,.dz,.index,.syn" class="fn__none" @change="handleUpload">
-            <SettingItem :item="{key:'translationAutoOnSelection',type:'checkbox'}" :model-value="settings.translation.autoOnSelection" :label="i18n.translationAutoOnSelection || '划词自动翻译'" :hint="i18n.translationAutoOnSelectionDesc || '选中文本后直接打开翻译面板'" :i18n="i18n" @change="value => (settings.translation.autoOnSelection = value, save())" />
-            <SettingItem :item="{key:'translationEngine',opts:translateEngines,labels:translateEngineLabels}" :model-value="settings.translation.engine" :label="i18n.translationEngine || '默认翻译引擎'" :i18n="i18n" @change="value => (settings.translation.engine = value, save())" />
+            <SettingItem :item="{key:'translationAutoOnSelection',type:'checkbox'}" :model-value="settings.translation.autoOnSelection" :label="i18n.translationAutoOnSelection || '선택 시 자동 번역'" :hint="i18n.translationAutoOnSelectionDesc || '텍스트 선택 시 바로 번역 패널 열기'" :i18n="i18n" @change="value => (settings.translation.autoOnSelection = value, save())" />
+            <SettingItem :item="{key:'translationEngine',opts:translateEngines,labels:translateEngineLabels}" :model-value="settings.translation.engine" :label="i18n.translationEngine || '기본 번역 엔진'" :i18n="i18n" @change="value => (settings.translation.engine = value, save())" />
             <SettingRows v-if="loadingDict" :rows="[]" :loading="true" :i18n="i18n" />
             <template v-else>
               <template v-for="section in dictSections" :key="section.key">
@@ -452,7 +452,7 @@ onUnmounted(() => window.removeEventListener('sireaderSettingsUpdated', syncAnno
             </template>
         </SettingSection>
 
-        <SettingSection :title="i18n.noteInsert || '笔记插入'" :icon="settingSectionIcon('root', 'other')" :open="isOpen('other')" @toggle="toggleAccordion('other')">
+        <SettingSection :title="i18n.noteInsert || '메모 삽입'" :icon="settingSectionIcon('root', 'other')" :open="isOpen('other')" @toggle="toggleAccordion('other')">
             <li v-for="field in noteFields" :key="field.key" class="b3-list-item b3-list-item--hide-action">
               <span class="b3-list-item__toggle fn__hidden"></span>
               <div class="fn__flex-1">
@@ -469,7 +469,7 @@ onUnmounted(() => window.removeEventListener('sireaderSettingsUpdated', syncAnno
                 <template v-if="field.type === 'search'">
                   <SettingRows v-if="field.docs?.length" :rows="docRows(field)" :i18n="i18n" />
                   <div>
-                    <input :value="field.input" class="b3-text-field" :placeholder="i18n?.searchDocPlaceholder || '搜索文档'" @input="field.setInput(($event.target as HTMLInputElement).value); ($event.target as HTMLInputElement).value.trim() && field.search()" @keyup.enter="field.search()">
+                    <input :value="field.input" class="b3-text-field" :placeholder="i18n?.searchDocPlaceholder || '문서 검색'" @input="field.setInput(($event.target as HTMLInputElement).value); ($event.target as HTMLInputElement).value.trim() && field.search()" @keyup.enter="field.search()">
                     <SettingRows v-if="field.results?.length" :rows="docResultRows(field)" :i18n="i18n" />
                   </div>
                 </template>
@@ -477,7 +477,7 @@ onUnmounted(() => window.removeEventListener('sireaderSettingsUpdated', syncAnno
             </li>
         </SettingSection>
 
-        <SettingSection :title="i18n.ttsSettings || '语音朗读'" :icon="settingSectionIcon('root', 'tts')" :open="isOpen('tts')" @toggle="toggleAccordion('tts')">
+        <SettingSection :title="i18n.ttsSettings || '음성 낭독'" :icon="settingSectionIcon('root', 'tts')" :open="isOpen('tts')" @toggle="toggleAccordion('tts')">
             <template v-if="settings.tts">
               <SettingItem
                 v-for="item in ttsFields"
@@ -497,15 +497,15 @@ onUnmounted(() => window.removeEventListener('sireaderSettingsUpdated', syncAnno
                 </template>
               </template>
             </template>
-            <SettingRows v-else :rows="[]" :empty="i18n.ttsNotConfigured || '语音未配置'" :i18n="i18n" />
+            <SettingRows v-else :rows="[]" :empty="i18n.ttsNotConfigured || '음성이 설정되지 않음'" :i18n="i18n" />
         </SettingSection>
 
       <div class="sr-settings-actions">
         <template v-if="resetConfirm">
-          <button class="b3-button b3-button--cancel" @click="resetConfirm = false">{{ i18n.cancel || '取消' }}</button>
+          <button class="b3-button b3-button--cancel" @click="resetConfirm = false">{{ i18n.cancel || '취소' }}</button>
           <button class="b3-button" @click="handleReset">{{ i18n.confirm || '确认' }}</button>
         </template>
-        <button v-else class="b3-button" @click="handleReset">{{ i18n.resetDefault || '恢复默认' }}</button>
+        <button v-else class="b3-button" @click="handleReset">{{ i18n.resetDefault || '기본값 복원' }}</button>
       </div>
     </div>
   </div>

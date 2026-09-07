@@ -183,14 +183,14 @@ export const importRemoteBook = async (request: RemoteDownloadRequest) => {
   const fingerprint = await fileFingerprint(source), dataId = await dataIdFromFingerprint(fingerprint)
   const path = await saveBookFile(source, request.url)
   const cover = await downloadCover(request.coverUrl, request.url)
-  await bookshelfManager.addBook({ url: request.url, title: normalizeBookTitle(info?.title || source.name.replace(/\.[^.]+$/, '')) || info?.title || source.name, author: info?.author || '未知作者', cover, format, path, size: source.size, tags: importTags(info), metadata: remoteMetadata(info), dataId, fingerprint })
+  await bookshelfManager.addBook({ url: request.url, title: normalizeBookTitle(info?.title || source.name.replace(/\.[^.]+$/, '')) || info?.title || source.name, author: info?.author || '작자 미상', cover, format, path, size: source.size, tags: importTags(info), metadata: remoteMetadata(info), dataId, fingerprint })
 }
 
 export const addOnlineBookToShelf = async (info: OnlineBookImportInfo) => {
   const cover = await downloadCover(info.coverUrl, info.url)
   const meta = { ...remoteMetadata(info), downloadUrl: info.downloadUrl }
   const fingerprint = urlFingerprint(info.url), dataId = await dataIdFromFingerprint(fingerprint)
-  const payload = { title: normalizeBookTitle(info.title) || info.title, author: info.author || '未知作者', cover, format: info.format || 'epub', path: info.readUrl, size: 0, tags: importTags(info) }
+  const payload = { title: normalizeBookTitle(info.title) || info.title, author: info.author || '작자 미상', cover, format: info.format || 'epub', path: info.readUrl, size: 0, tags: importTags(info) }
   const existing = await bookshelfManager.getBook(info.url)
   if (existing) return bookshelfManager.updateBook(info.url, { ...payload, cover: cover || existing.cover, meta: { ...(existing.meta || {}), ...meta } })
   return bookshelfManager.addBook({ url: info.url, ...payload, metadata: meta, dataId, fingerprint })

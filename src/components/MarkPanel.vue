@@ -3,21 +3,21 @@
     <div v-if="state.showMenu || state.showPanel || state.showSendMenu" class="mark-overlay" @click="closeAll" />
 
     <div v-if="state.showMenu" class="mark-menu" :style="menuPosition" @click.stop>
-      <button v-if="!readOnly" @click="openSelectionEditor" class="b3-tooltips b3-tooltips__s" :aria-label="i18n?.note || '笔记'"><svg><use xlink:href="#lucide-square-pen" /></svg></button>
-      <button v-if="!readOnly" @click="() => handleCopy()" class="b3-tooltips b3-tooltips__s" :aria-label="i18n?.mark || '标注'"><svg><use xlink:href="#iconMark" /></svg></button>
-      <button v-if="!readOnly" @click="toggleSendMenu" class="b3-tooltips b3-tooltips__s" :aria-label="i18n?.sendTo || '发送到'"><svg><use xlink:href="#lucide-send" /></svg></button>
-      <button @click="handleCopyText" class="b3-tooltips b3-tooltips__s" :aria-label="i18n?.copy || '复制'"><svg><use xlink:href="#iconCopy" /></svg></button>
-      <button v-if="props.ttsConfig?.enabled" @click="handleSpeak" class="b3-tooltips b3-tooltips__s" :aria-label="i18n?.ttsPlay || '朗读'"><svg><use xlink:href="#iconPlay" /></svg></button>
-      <button @click="handleDict" class="b3-tooltips b3-tooltips__s" :aria-label="i18n?.dict || '词典'"><svg><use xlink:href="#iconLanguage" /></svg></button>
-      <button @click="handleTranslate" class="b3-tooltips b3-tooltips__s" :aria-label="i18n?.translate || '翻译'"><svg><use xlink:href="#iconTranslate" /></svg></button>
+      <button v-if="!readOnly" @click="openSelectionEditor" class="b3-tooltips b3-tooltips__s" :aria-label="i18n?.note || '메모'"><svg><use xlink:href="#lucide-square-pen" /></svg></button>
+      <button v-if="!readOnly" @click="() => handleCopy()" class="b3-tooltips b3-tooltips__s" :aria-label="i18n?.mark || '주석'"><svg><use xlink:href="#iconMark" /></svg></button>
+      <button v-if="!readOnly" @click="toggleSendMenu" class="b3-tooltips b3-tooltips__s" :aria-label="i18n?.sendTo || '보내기'"><svg><use xlink:href="#lucide-send" /></svg></button>
+      <button @click="handleCopyText" class="b3-tooltips b3-tooltips__s" :aria-label="i18n?.copy || '복사'"><svg><use xlink:href="#iconCopy" /></svg></button>
+      <button v-if="props.ttsConfig?.enabled" @click="handleSpeak" class="b3-tooltips b3-tooltips__s" :aria-label="i18n?.ttsPlay || '음성 낭독'"><svg><use xlink:href="#iconPlay" /></svg></button>
+      <button @click="handleDict" class="b3-tooltips b3-tooltips__s" :aria-label="i18n?.dict || '사전'"><svg><use xlink:href="#iconLanguage" /></svg></button>
+      <button @click="handleTranslate" class="b3-tooltips b3-tooltips__s" :aria-label="i18n?.translate || '번역'"><svg><use xlink:href="#iconTranslate" /></svg></button>
     </div>
 
     <!-- 发送到文档菜单 -->
     <div v-if="state.showSendMenu" class="mark-menu send-menu" :style="sendMenuPosition" @click.stop>
       <button v-for="doc in quickDocs" :key="doc.id" class="send-item" @click="() => handleSendToDoc(doc.id)">{{ doc.name }}</button>
-      <input v-model="sendSearch" class="b3-text-field send-input" :placeholder="i18n?.searchDocPlaceholder || '搜索文档...'" @input="searchSendDocs" />
-      <div v-if="!sendDocs.length" class="send-empty">{{ sendSearch ? '无结果' : '输入关键词搜索' }}</div>
-      <button v-for="doc in sendDocs" :key="doc.id" class="send-item" @click="() => handleSendToDoc(doc.path?.split('/').pop()?.replace('.sy', '') || doc.id)">{{ doc.hPath || doc.content || '无标题' }}</button>
+      <input v-model="sendSearch" class="b3-text-field send-input" :placeholder="i18n?.searchDocPlaceholder || '문서 검색...'" @input="searchSendDocs" />
+      <div v-if="!sendDocs.length" class="send-empty">{{ sendSearch ? '결과 없음' : '검색어를 입력하세요' }}</div>
+      <button v-for="doc in sendDocs" :key="doc.id" class="send-item" @click="() => handleSendToDoc(doc.path?.split('/').pop()?.replace('.sy', '') || doc.id)">{{ doc.hPath || doc.content || '제목 없음' }}</button>
     </div>
 
     <div v-if="state.showPanel" v-motion :initial="{ opacity: 0, y: 5 }" :enter="{ opacity: 1, y: 0 }" :class="['sr-popup sr-popup-panel',{ 'is-above': cardPlacement.dir === 'down' }]" :style="cardPosition" @click.stop>
@@ -33,8 +33,8 @@
           :i18n="i18n"
           :editing="state.isEditing"
           :editable="!readOnly"
-          :text="state.text || '无内容'"
-          :chapter="state.isEditing ? '' : (state.currentMark?.chapter || (state.currentMark?.page ? `第${state.currentMark.page}页` : ''))"
+          :text="state.text || '내용 없음'"
+          :chapter="state.isEditing ? '' : (state.currentMark?.chapter || (state.currentMark?.page ? `제${state.currentMark.page}페이지` : ''))"
           :note="state.note"
           :mark-color="currentMarkColor"
           :kind="state.currentMark?.type === 'note' ? 'note' : state.currentMark?.type === 'bookmark' ? 'bookmark' : 'highlight'"
@@ -54,10 +54,10 @@
         >
           <template v-if="!state.isEditing" #actions>
             <div class="sr-icon-actions">
-              <button @click.stop="handleCopyMark" class="b3-tooltips b3-tooltips__w" :aria-label="i18n?.copy || '复制'"><svg><use xlink:href="#iconCopy" /></svg></button>
-              <button v-if="state.currentMark?.blockId" @click.stop="handleOpenBlock" @mouseenter="handleShowFloat" @mouseleave="hideFloat" class="b3-tooltips b3-tooltips__w" aria-label="打开块"><svg><use xlink:href="#iconRef" /></svg></button>
-              <button v-else-if="!readOnly" @click.stop="handleImport" class="b3-tooltips b3-tooltips__w" :aria-label="i18n?.import || '导入'"><svg><use xlink:href="#iconDownload" /></svg></button>
-              <button v-if="!readOnly" @click.stop="handleDelete" class="b3-tooltips b3-tooltips__w" :aria-label="i18n?.delete || '删除'"><svg><use xlink:href="#iconTrashcan" /></svg></button>
+              <button @click.stop="handleCopyMark" class="b3-tooltips b3-tooltips__w" :aria-label="i18n?.copy || '복사'"><svg><use xlink:href="#iconCopy" /></svg></button>
+              <button v-if="state.currentMark?.blockId" @click.stop="handleOpenBlock" @mouseenter="handleShowFloat" @mouseleave="hideFloat" class="b3-tooltips b3-tooltips__w" aria-label="블록 열기"><svg><use xlink:href="#iconRef" /></svg></button>
+              <button v-else-if="!readOnly" @click.stop="handleImport" class="b3-tooltips b3-tooltips__w" :aria-label="i18n?.import || '가져오기'"><svg><use xlink:href="#iconDownload" /></svg></button>
+              <button v-if="!readOnly" @click.stop="handleDelete" class="b3-tooltips b3-tooltips__w" :aria-label="i18n?.delete || '삭제'"><svg><use xlink:href="#iconTrashcan" /></svg></button>
             </div>
           </template>
         </MarkCard>
@@ -381,7 +381,7 @@ const searchSendDocs = async () => {
 }
 const handleSendToDoc = async (docId: string) => {
   if (readOnly.value) return
-  if (props.can && !props.can('quick-send')) return props.showUpgrade?.('快捷发送')
+  if (props.can && !props.can('quick-send')) return props.showUpgrade?.('빠른 전송')
   if (!docId) return
   const mark = state.selection ? await addSelectionMark(state.selection.text, props.quickMarkColor, props.quickMarkStyle) : state.currentMark
   if (mark) await (await import('@/utils/copy')).sendMarkToDoc(mark, docId, markExportCtx())
@@ -389,12 +389,12 @@ const handleSendToDoc = async (docId: string) => {
 }
 const handleCopyText = () => {
   if (!state.selection) return
-  navigator.clipboard.writeText(state.selection.text).then(() => showMessage(props.i18n?.copied || '已复制', 1000))
+  navigator.clipboard.writeText(state.selection.text).then(() => showMessage(props.i18n?.copied || '복사됨', 1000))
   closeAll()
 }
 const handleSpeak = () => {
   if (!state.selection || !props.ttsController) return
-  if (props.can && !props.can('tts')) return props.showUpgrade?.('TTS朗读')
+  if (props.can && !props.can('tts')) return props.showUpgrade?.('TTS 낭독')
   props.ttsController.speak(state.selection.text, props.ttsConfig)
   closeMenus()
 }
@@ -405,7 +405,7 @@ const handleDict = async () => {
   closeMenus()
 }
 const handleTranslate = () => {
-  if (props.can && !props.can('translate')) return props.showUpgrade?.('翻译')
+  if (props.can && !props.can('translate')) return props.showUpgrade?.('번역')
   setPanelState('translate')
 }
 const handleEdit = () => {
@@ -431,19 +431,19 @@ const handleSave = async () => {
       const { saveMarkEdit } = await import('@/utils/copy')
       await saveMarkEdit(state.currentMark, updates, { ...markExportCtx(), reader: props.reader })
       Object.assign(state.currentMark, updates)
-      showMessage(props.i18n?.saved || '已保存', 1000)
+      showMessage(props.i18n?.saved || '저장되었습니다', 1000)
       state.isEditing = false
       return
     }
     const args = selectionArgs()
     const pos = args?.[0]
-    if (!pos) return showMessage('无法获取位置信息', 2000, 'error')
+    if (!pos) return showMessage('위치 정보를 가져올 수 없습니다', 2000, 'error')
     const tags = parseMarkTags(state.tags)
     await (state.note.trim() ? props.manager.addNote(pos, state.note.trim(), ...args.slice(1), tags) : props.manager.addHighlight(...args, tags))
     await (await import('@/composables/useSetting')).collectAnnotationTagPresets(tags).catch(() => {})
     closeAll()
   } catch {
-    showMessage(props.i18n?.saveError || '保存失败', 2000, 'error')
+    showMessage(props.i18n?.saveError || '저장 실패', 2000, 'error')
   }
 }
 const handleDelete = async () => {
@@ -451,11 +451,11 @@ const handleDelete = async () => {
   if (!props.manager || !state.currentMark) return
   try {
     if (await props.manager.deleteMark(state.currentMark)) {
-      showMessage(props.i18n?.deleted || '已删除', 1000)
+      showMessage(props.i18n?.deleted || '삭제되었습니다', 1000)
       closeAll()
-    } else showMessage('删除失败：未找到标注', 2000, 'error')
+    } else showMessage('삭제 실패: 주석을 찾을 수 없습니다', 2000, 'error')
   } catch {
-    showMessage(props.i18n?.deleteError || '删除失败', 2000, 'error')
+    showMessage(props.i18n?.deleteError || '삭제 실패', 2000, 'error')
   }
 }
 const handleCancel = () => state.currentMark ? setPanelState('card', { ...markData(state.currentMark, { isEditing: false }) }) : closeAll()

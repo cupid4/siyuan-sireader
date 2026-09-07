@@ -41,7 +41,7 @@
           <div class="bs-row__meta">
             <span v-if="book.publisher" class="ariaLabel" :aria-label="book.publisher">{{ book.publisher }}</span>
             <span v-if="book.publisher && book.pages">·</span>
-            <span v-if="book.pages" class="ariaLabel" :aria-label="`${book.pages} 页`">{{ book.pages }} 页</span>
+            <span v-if="book.pages" class="ariaLabel" :aria-label="`${book.pages} 쪽`">{{ book.pages }} 쪽</span>
             <span v-if="(book.publisher || book.pages) && book.intro">·</span>
             <span v-if="book.intro" class="ariaLabel" :aria-label="book.intro">{{ book.intro }}</span>
           </div>
@@ -69,7 +69,7 @@
                 <small>{{ sourceDesc(src) }}</small>
               </div>
               <div class="sr-manage-actions">
-                <button v-if="isWebSource(src)" class="sr-text-btn" @click="openWebSource(src)">打开</button>
+                <button v-if="isWebSource(src)" class="sr-text-btn" @click="openWebSource(src)">열기</button>
                 <button class="sr-text-btn" @click="startEditSource(src)">{{ TEXT.edit }}</button>
                 <button v-if="src.type === 'custom'" class="sr-text-btn danger" @click="removeCustomSource(src.id)">{{ TEXT.remove }}</button>
                 <input type="checkbox" class="b3-switch" :checked="src.enabled" @change="toggleSource(src.id)">
@@ -120,7 +120,7 @@
         <div v-if="detailBook" class="sr-manage-panel sr-detail-panel" @click.stop>
           <header class="sr-modal__head">
             <span>{{ TEXT.detail }}</span>
-            <span class="block__icon block__icon--show sr-icon-btn" aria-label="关闭" @click="detailBook = null">
+            <span class="block__icon block__icon--show sr-icon-btn" aria-label="닫기" @click="detailBook = null">
               <svg><use xlink:href="#lucide-x" /></svg>
             </span>
           </header>
@@ -144,16 +144,16 @@
               </div>
             </div>
             <label v-if="detailBook.intro" class="sr-form-item">
-              <span class="ft__secondary">简介</span>
+              <span class="ft__secondary">소개</span>
               <span class="sr-intro-full">{{ detailBook.intro }}</span>
             </label>
             <div class="sr-actions-full">
               <button v-if="detailBook.readUrl" class="sr-btn-primary" @click="openReadOnline(detailBook)"><svg><use xlink:href="#lucide-eye"/></svg>{{ TEXT.readOnline }}</button>
               <button v-if="detailBook.readUrl" class="sr-btn-primary" :class="{ active: isLinkInShelf(detailBook) || importingState(detailBook, 'link') }" @click="addLinkBook(detailBook)">
-                <svg><use :xlink:href="isLinkInShelf(detailBook) ? '#iconCheck' : '#iconLink'"/></svg>{{ importingState(detailBook, 'link') || (isLinkInShelf(detailBook) ? TEXT.inShelf : '链接添加到书架') }}
+                <svg><use :xlink:href="isLinkInShelf(detailBook) ? '#iconCheck' : '#iconLink'"/></svg>{{ importingState(detailBook, 'link') || (isLinkInShelf(detailBook) ? TEXT.inShelf : '서재에 링크 추가') }}
               </button>
               <button v-if="hasDownloadUrl(detailBook)" class="sr-btn-primary" :class="{ active: isDownloadInShelf(detailBook) || importingState(detailBook, 'download') }" @click="addDownloadBook(detailBook)">
-                <svg><use :xlink:href="isDownloadInShelf(detailBook) ? '#iconCheck' : '#iconDownload'"/></svg>{{ importingState(detailBook, 'download') || (isDownloadInShelf(detailBook) ? TEXT.inShelf : '下载添加到书架') }}
+                <svg><use :xlink:href="isDownloadInShelf(detailBook) ? '#iconCheck' : '#iconDownload'"/></svg>{{ importingState(detailBook, 'download') || (isDownloadInShelf(detailBook) ? TEXT.inShelf : '다운로드하여 서재에 추가') }}
               </button>
               <button v-if="!detailBook.readUrl" class="sr-btn-primary" @click="openLink(detailBook.bookUrl)"><svg><use xlink:href="#iconLink"/></svg>{{ i18n.openLink || TEXT.openLink }}</button>
             </div>
@@ -176,7 +176,7 @@ import { createWereadContextFromSource } from '@/weread/context'
 import { createPrivateSearchAccess } from '@private-sources'
 import DockShell from './ui/DockShell.vue'
 
-const TEXT = { searchPlaceholder: '输入书名搜索', allSources: '全部来源', manageTitle: '来源管理', manageDesc: '统一管理内置源、自定义源和请求前缀。', edit: '编辑', remove: '删除', editSource: '编辑来源', addSource: '新增自定义来源', domains: '镜像列表', domainsPlaceholder: '每行一个域名', currentDomain: '当前镜像', account: '账号', accountPlaceholder: '邮箱', password: '密码', passwordPlaceholder: '用于正常登录获取搜索结果', siteUrl: '站点地址', searchUrl: '搜索地址', bookUrlPrefix: '书籍地址前缀', itemSelector: '结果项选择器', titleSelector: '标题选择器', authorSelector: '作者选择器', linkSelector: '链接选择器', coverSelector: '封面选择器', introSelector: '简介选择器', requestPrefix: '请求前缀 / 代理', requestPrefixPlaceholder: '留空或填写代理前缀', name: '名称', extensions: '扩展名过滤', extensionsPlaceholder: 'epub,pdf,mobi,azw3', siteUrlPlaceholder: 'https://example.com', searchUrlPlaceholder: 'https://example.com/search?q={query}', bookUrlPrefixPlaceholder: '留空自动推断', cancel: '取消', save: '保存', noResults: '未找到书籍', searching: '搜索中...', inShelf: '已在书架', openLink: '打开链接', readOnline: '在线阅读', detail: '书籍详情', saveError: '来源名称不能为空', customError: '自定义源至少需要搜索地址、结果项、标题、链接选择器', saveSuccess: '来源已保存', addError: '添加失败', sourceDescCustom: '自定义选择器来源', sourceDescAnna: '镜像 / 扩展名 / 请求前缀', sourceDescBuiltin: '内置来源' } as const
+const TEXT = { searchPlaceholder: '도서 제목 검색', allSources: '모든 소스', manageTitle: '소스 관리', manageDesc: '기본 소스, 사용자 지정 소스 및 프록시 관리.', edit: '편집', remove: '삭제', editSource: '소스 편집', addSource: '사용자 지정 소스 추가', domains: '미러 목록', domainsPlaceholder: '한 줄에 하나씩 도메인 입력', currentDomain: '현재 미러', account: '계정', accountPlaceholder: '이메일', password: '비밀번호', passwordPlaceholder: '검색 결과를 가져오기 위한 로그인 정보', siteUrl: '사이트 주소', searchUrl: '검색 주소', bookUrlPrefix: '도서 주소 접두사', itemSelector: '결과 항목 선택자', titleSelector: '제목 선택자', authorSelector: '저자 선택자', linkSelector: '링크 선택자', coverSelector: '표지 선택자', introSelector: '소개 선택자', requestPrefix: '요청 접두사 / 프록시', requestPrefixPlaceholder: '비워두거나 프록시 접두사 입력', name: '이름', extensions: '확장자 필터', extensionsPlaceholder: 'epub,pdf,mobi,azw3', siteUrlPlaceholder: 'https://example.com', searchUrlPlaceholder: 'https://example.com/search?q={query}', bookUrlPrefixPlaceholder: '비워두면 자동 추론', cancel: '취소', save: '저장', noResults: '도서를 찾을 수 없습니다', searching: '검색 중...', inShelf: '서재에 있음', openLink: '링크 열기', readOnline: '온라인 읽기', detail: '도서 상세', saveError: '소스 이름은 비워둘 수 없습니다', customError: '사용자 지정 소스에는 검색 주소, 결과 항목, 제목, 링크 선택자가 필요합니다', saveSuccess: '소스가 저장되었습니다', addError: '추가 실패', sourceDescCustom: '사용자 지정 선택자 소스', sourceDescAnna: '미러 / 확장자 / 프록시', sourceDescBuiltin: '기본 소스' } as const
 const FORM_DEFAULTS = { id: '', type: 'custom', name: '', url: '', searchUrl: '', requestPrefix: '', extensions: '', domainsText: '', currentDomain: '', authEmail: '', authPassword: '', bookUrlPrefix: '', itemSelector: '', titleSelector: '', authorSelector: '', linkSelector: '', coverSelector: '', introSelector: '' }
 const field = (key: keyof typeof FORM_DEFAULTS, label: string, placeholder = '') => ({ key, label, placeholder })
 const baseFields = [field('name', TEXT.name), field('requestPrefix', TEXT.requestPrefix, TEXT.requestPrefixPlaceholder), field('extensions', TEXT.extensions, TEXT.extensionsPlaceholder)] as const
@@ -199,11 +199,11 @@ const toolbarMenuAction = computed(() => ({ id: 'source', icon: '#lucide-sliders
 const toolbarActions = computed(() => [{ id: 'manage', icon: '#lucide-settings-2', label: TEXT.manageTitle }])
 const detailStats = computed(() => {
   const stats = detailBook.value?.privateData?.stats
-  return stats ? [stats.progress ? `进度 ${stats.progress}%` : '', stats.chapters ? `目录 ${stats.chapters}` : '', stats.marks ? `我的划线 ${stats.marks}` : '', stats.bookmarks ? `书签 ${stats.bookmarks}` : '', stats.bestMarks ? `热门划线 ${stats.bestMarks}` : '', stats.reviews ? `想法 ${stats.reviews}` : ''].filter(Boolean) : []
+  return stats ? [stats.progress ? `진도 ${stats.progress}%` : '', stats.chapters ? `목차 ${stats.chapters}` : '', stats.marks ? `내 하이라이트 ${stats.marks}` : '', stats.bookmarks ? `북마크 ${stats.bookmarks}` : '', stats.bestMarks ? `인기 하이라이트 ${stats.bestMarks}` : '', stats.reviews ? `생각 ${stats.reviews}` : ''].filter(Boolean) : []
 })
 
 const normalizeExtensions = (value: string) => Array.from(new Set(value.split(/[,，\s]+/).map(item => item.trim().toLowerCase()).filter(Boolean)))
-const sourceDesc = (source: HttpSourceConfig) => isWebSource(source) ? '网页书源' : source.type === 'custom' ? TEXT.sourceDescCustom : source.domains?.length ? TEXT.sourceDescAnna : TEXT.sourceDescBuiltin
+const sourceDesc = (source: HttpSourceConfig) => isWebSource(source) ? '웹 소스' : source.type === 'custom' ? TEXT.sourceDescCustom : source.domains?.length ? TEXT.sourceDescAnna : TEXT.sourceDescBuiltin
 const shouldShowCover = (book: any) => book.coverUrl && !failedCovers.has(book.coverUrl)
 const handleCoverError = (book: any) => failedCovers.add(book.coverUrl)
 const onDetailCoverError = (event: Event) => ((event.target as HTMLImageElement).src = '/icons/book-placeholder.svg')
@@ -316,7 +316,7 @@ const removeCustomSource = async (id: string) => {
 }
 const search = async () => {
   if (!keyword.value.trim()) return
-  if (!can.value('book-search')) return showUpgrade('在线搜书')
+  if (!can.value('book-search')) return showUpgrade('온라인 도서 검색')
   searching.value = true
   results.value = []
   try {
@@ -326,18 +326,18 @@ const search = async () => {
       : (await Promise.all(visibleEnabledSources.value.map(source => httpSourceManager.search(keyword.value, source.id)))).flat()
     await Promise.all(results.value.map(checkInShelf))
   } catch (error: any) {
-    showMessage(`搜索失败: ${error.message}`, 3000, 'error')
+    showMessage(`검색 실패: ${error.message}`, 3000, 'error')
   } finally {
     searching.value = false
   }
 }
 const addLinkBook = async (book: any) => {
   try {
-    setImportingState(book, 'link', '添加中...')
+    setImportingState(book, 'link', '추가 중...')
     await httpSourceManager.init()
     await addOnlineBookToShelf(httpSourceManager.getOnlineBookInfo(book))
     shelfBooks.value.add(linkShelfKey(book))
-    showMessage(`《${book.name}》链接已添加到书架`, 2000, 'info')
+    showMessage(`《${book.name}》링크가 서재에 추가되었습니다`, 2000, 'info')
   } catch (error: any) {
     showMessage(error.message || TEXT.addError, 3000, 'error')
   } finally {
@@ -346,13 +346,13 @@ const addLinkBook = async (book: any) => {
 }
 const addDownloadBook = async (book: any) => {
   try {
-    setImportingState(book, 'download', '下载中...')
+    setImportingState(book, 'download', '다운로드 중...')
     await httpSourceManager.init()
     const plan = await httpSourceManager.getDownloadPlan(book, message => setImportingState(book, 'download', message))
     await importRemoteBook({ ...plan, onProgress: message => setImportingState(book, 'download', message) })
     downloadShelfKeys(book).forEach(key => shelfBooks.value.add(key))
     shelfBooks.value.add(plan.url)
-    showMessage(`《${book.name}》已添加到书架`, 2000, 'info')
+    showMessage(`《${book.name}》도서가 서재에 추가되었습니다`, 2000, 'info')
   } catch (error: any) {
     showMessage(error.message || TEXT.addError, 3000, 'error')
   } finally {
